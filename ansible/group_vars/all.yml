@@ -1,7 +1,8 @@
 ---
 # Pinned versions (design doc §6). Bump via PR, never by hand on servers.
 k3s_version: "v1.36" # minor pin; install script resolves latest patch via the v1.36 release channel
-cilium_version: "1.19" # minor pin; role resolves latest patch via GitHub releases API (1.19.6+ required for K8s 1.36)
+# cilium_version removed 2026-09-28: Cilium role disabled (pod->API failed
+# with 1.17/1.19). Default flannel+kube-proxy in use. Re-add if Cilium returns.
 
 # Both nodes are schedulable — no spare capacity, no dedicated control node.
 # (k3s-server is NOT tainted; scheduler may place pods on both nodes.)
