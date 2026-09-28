@@ -1,0 +1,13 @@
+# Copy to terraform.tfvars for LOCAL runs only. Never commit the real file.
+# In CI, values come from TF_VAR_* environment variables instead.
+
+tenancy_ocid   = "ocid1.tenancy.oc1..xxxx"
+compartment_id = "ocid1.compartment.oc1..xxxx # or tenancy ocid for root compartment"
+
+region      = "eu-frankfurt-1"
+name_prefix = "k3s"
+
+# Your public IP in CIDR form, e.g. "39.40.12.34/32". Find it: curl -4 ifconfig.me
+admin_cidr = "0.0.0.0/0" # <-- lock this down before apply
+
+ssh_public_key = "ssh-ed25519 AAAA... you@example"
