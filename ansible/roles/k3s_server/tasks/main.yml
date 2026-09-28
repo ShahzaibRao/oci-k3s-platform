@@ -30,14 +30,8 @@
     mode: "0600"
     content: |
       # Managed by Ansible (k3s_server role) — do not edit by hand.
+      # Simple default k3s: flannel + kube-proxy + bundled Traefik.
       cluster-init: true            # embedded etcd; single node now, HA-ready later
-      # Default CNI: flannel (vxlan) + kube-proxy.
-      # Cilium removed 2026-09-28 after pod->API connectivity failed with
-      # Cilium 1.17 and 1.19 (even with ipv4NativeRoutingCIDR fix).
-      # Default networking proven working on this OCI VM. Cilium is a
-      # separate future milestone if needed.
-      disable:
-        - traefik                   # apna Traefik DaemonSet + Gateway API ayega (design 6.4)
       etcd-snapshot-schedule-cron: "0 */6 * * *"
       etcd-snapshot-retention: 72    # 72 x 6h ~= 18 days
       tls-san:

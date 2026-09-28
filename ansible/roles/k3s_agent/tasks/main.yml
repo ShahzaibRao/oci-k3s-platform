@@ -3,6 +3,13 @@
 # Runs after k3s_server. Retrieves the server node-token securely
 # (never printed, never committed) and joins via the server private IP.
 
+- name: Uninstall existing k3s agent (clean rebuild)
+  ansible.builtin.command: /usr/local/bin/k3s-agent-uninstall.sh
+  args:
+    removes: /usr/local/bin/k3s
+  failed_when: false
+  # Clean slate: remove stale state from previous installs.
+
 - name: Check installed k3s version
   ansible.builtin.command: /usr/local/bin/k3s --version
   register: k3s_installed_version
