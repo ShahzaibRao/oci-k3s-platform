@@ -116,11 +116,9 @@
         - name: web
           port: 80
           protocol: HTTP
-        - name: websecure
-          port: 443
-          protocol: HTTPS
-          tls:
-            mode: Terminate
+        # NOTE: HTTPS listener removed. Gateway API requires certificateRefs
+        # when TLS mode is Terminate; we have no certs yet (cert-manager is
+        # a future milestone). HTTPS will be added back with cert-manager.
 
 - name: Apply GatewayClass and Gateway
   ansible.builtin.command:
