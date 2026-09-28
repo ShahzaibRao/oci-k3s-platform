@@ -42,6 +42,7 @@
       --set hubble.relay.enabled=true
       --set hubble.ui.enabled=true
       --wait
+      --wait-duration 10m
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   when: cilium_daemonset.rc != 0
