@@ -1,5 +1,30 @@
 ---
-# Placeholder — real tasks land in step 2 (common role).
-- name: Skeleton check
-  ansible.builtin.debug:
-    msg: "common: skeleton OK — SSH + become work, logic comes in step 2."
+# common — base OS prep, runs on BOTH nodes before anything else.
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install base packages
+  ansible.builtin.apt:
+    name:
+      - curl # k3s / cilium install scripts download karte hain
+      - ca-certificates # GitHub/OCI endpoints se TLS
+      - jq # agle steps mein exact version pinning ke liye
+      - gnupg # kabhi repo key add karni pari to
+    state: present
+
+# timedatectl ke barabar, sirf builtin modules se (koi extra collection nahi).
+- name: Set system timezone
+  ansible.builtin.file:
+    src: "/usr/share/zoneinfo/{{ system_timezone }}"
+    dest: /etc/localtime
+    state: link
+    force: true
+
+- name: Record timezone in /etc/timezone
+  ansible.builtin.copy:
+    content: "{{ system_timezone }}\n"
+    dest: /etc/timezone
+    mode: "0644"
