@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-of-apps
+  namespace: argocd
+  # Parent Application: watches argocd/apps/ and creates one child
+  # Application per YAML file (cert-manager, longhorn, ...).
+  # Excludes itself to avoid a self-referential loop.
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/ShahzaibRao/oci-k3s-platform.git
+    targetRevision: HEAD
+    path: argocd/apps
+    directory:
+      exclude: app-of-apps.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true # delete child apps removed from Git
+      selfHeal: true # revert manual changes to child apps
