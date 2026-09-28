@@ -6,3 +6,5 @@ cilium_version: "1.17" # installed by the cilium role (step 4)
 # Both nodes are schedulable — no spare capacity, no dedicated control node.
 # (k3s-server is NOT tainted; scheduler may place pods on both nodes.)
 k3s_server_taints: []
+
+system_timezone: "Asia/Karachi" # logs tumhare local time mein
