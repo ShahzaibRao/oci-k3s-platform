@@ -63,6 +63,7 @@ DevSecOps at every layer.
 | Storage | **Longhorn** (default StorageClass, replica 2 across nodes) + recurring backups → R2. local-path fallback only. Node-pinning rule retired |
 | SSH | Open via admin_cidr for now |
 | Cost guard | OCI Budget alert at $0 (free, production habit) |
+| Infra CI | `.github/workflows/infra.yml`: fmt → init (R2 backend) → validate → plan on every PR/push; **apply only after manual approval** via `oci-production` environment (required reviewer). Plan file + Ansible `inventory.ini` uploaded as artifacts. No auto-apply |
 
 ## Resource budget (of 24 GB RAM)
 | Component | ~RAM |
@@ -87,7 +88,7 @@ Security workflows live in each **app repo** (not the infra repo):
 | Layer | Controls |
 |---|---|
 | Git | `.gitignore` from day 1; pre-commit + gitleaks hooks; gitleaks-action on every PR; branch protection (no direct push to main, PR reviews required) |
-| IaC | No hardcoded secrets (env/GitHub secrets only); R2 remote state + lockfile; **Checkov** scan in `infra.yml` (fail on HIGH) |
+| IaC | No hardcoded secrets (env/GitHub secrets only); R2 remote state + lockfile; **Checkov** scan in `infra.yml` (fail on HIGH) — *planned, next infra PR* |
 | CI/CD | **Trivy** image scan on every build (fail on HIGH/CRITICAL before push); **SonarCloud** SAST + quality gate (free: both repos public) |
 | Containers | Non-root USER; distroless/minimal + multi-stage builds |
 | Cluster | Sealed Secrets (+ key backup); PSS `restricted`; Cilium default-deny NetworkPolicies |
@@ -156,7 +157,7 @@ Known SPOF: single k3s server. Accepted for free tier; stated openly.
 
 ## Open items (decided later)
 - Subdomain names per app
-- admin_cidr lockdown to personal IP before first apply
+- admin_cidr: **decided 2026-09-28** — `0.0.0.0/0` for now (personal IP changes frequently); lock down later by creating the `TF_VAR_ADMIN_CIDR` secret (workflow picks it up automatically, no code change)
 - SAST: SonarCloud (recommended, free for public) vs SonarQube self-hosted vs Semgrep — **tumhara faisla pending**
 - Confirm: k3s v1.33, ArgoCD Image Updater (both assistant-picked, not yet confirmed by you)
 - Chapter 03 for Notion: "Kubernetes Security Best Practices"
