@@ -67,6 +67,10 @@
   environment:
     # minor pin: script resolves latest v1.36 patch via the release channel
     INSTALL_K3S_CHANNEL: "{{ k3s_version }}"
+  # async: install takes minutes; polling is resilient to transient SSH drops
+  # (the install continues server-side; Ansible re-attaches on next poll)
+  async: 600
+  poll: 15
   when: k3s_installed_version.rc != 0
 
 - name: Ensure k3s-agent service is enabled and started
