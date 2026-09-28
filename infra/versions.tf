@@ -15,5 +15,7 @@ terraform {
 
   # Backend is configured via -backend-config flags in CI (backend.hcl),
   # never hardcoded here — so local runs can't accidentally touch R2 state.
+  # R2 credentials come from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY env vars.
+  # Local: terraform init -backend-config=backend.hcl (gitignored, never committed).
   backend "s3" {}
 }

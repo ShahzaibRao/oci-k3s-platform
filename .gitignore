@@ -1,0 +1,32 @@
+# Terraform
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate*
+terraform.tfvars
+backend.hcl
+override.tf
+crash.log
+
+# Keys & secrets
+*.pem
+*.key
+*.p12
+*.jks
+id_rsa*
+secrets/
+*.tfvars.json
+
+# Ansible
+*.retry
+ansible/*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*~
+
+# Python
+__pycache__/
+*.pyc
