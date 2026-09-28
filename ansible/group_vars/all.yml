@@ -1,7 +1,7 @@
 ---
 # Pinned versions (design doc §6). Bump via PR, never by hand on servers.
 k3s_version: "v1.33" # minor pin; install script resolves latest patch via the v1.33 release channel
-cilium_version: "1.17" # installed by the cilium role (step 4)
+cilium_version: "1.17" # minor pin; role resolves latest patch via GitHub releases API
 
 # Both nodes are schedulable — no spare capacity, no dedicated control node.
 # (k3s-server is NOT tainted; scheduler may place pods on both nodes.)
