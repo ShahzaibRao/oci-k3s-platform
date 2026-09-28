@@ -34,10 +34,14 @@
 
 - name: Bootstrap app-of-apps parent Application
   ansible.builtin.command:
-    cmd: kubectl apply -n argocd --server-side -f {{ playbook_dir }}/../argocd/apps/app-of-apps.yaml
+    cmd: >-
+      kubectl apply -n argocd --server-side
+      -f https://raw.githubusercontent.com/ShahzaibRao/oci-k3s-platform/main/argocd/apps/app-of-apps.yaml
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   register: argocd_aoa
   changed_when: "'created' in argocd_aoa.stdout or 'configured' in argocd_aoa.stdout"
-  # One-time bootstrap: after this, ArgoCD manages child apps itself via Git.
+  # One-time bootstrap from GitHub (not local file): the workflow checkout
+  # may not have the file yet; the URL always reflects merged main.
+  # After this, ArgoCD manages child apps itself via Git.
   # The parent app is excluded from its own directory source to avoid a loop.
