@@ -1,0 +1,32 @@
+---
+# argocd — install ArgoCD via official manifests (not Helm).
+# App-of-apps pattern: parent Application manages child apps (cert-manager, Longhorn).
+# Installed via Ansible; apps managed via GitOps after bootstrap.
+
+- name: Create argocd namespace
+  ansible.builtin.command:
+    cmd: kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: argocd_ns
+  changed_when: "'created' in argocd_ns.stdout"
+
+- name: Install ArgoCD (pinned version, server-side)
+  ansible.builtin.command:
+    cmd: >-
+      kubectl apply -n argocd --server-side --force-conflicts
+      -f https://raw.githubusercontent.com/argoproj/argo-cd/{{ argocd_version }}/manifests/install.yaml
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: argocd_install
+  changed_when: "'created' in argocd_install.stdout or 'configured' in argocd_install.stdout"
+  # NOTE: --server-side --force-conflicts is REQUIRED.
+  # The ApplicationSet CRD exceeds the 262KB client-side apply annotation limit.
+
+- name: Wait for ArgoCD server to be ready
+  ansible.builtin.command:
+    cmd: kubectl wait --for=condition=available --timeout=300s deployment/argocd-server -n argocd
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: argocd_wait
+  changed_when: false

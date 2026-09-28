@@ -21,3 +21,9 @@
   become: true
   roles:
     - k3s_agent
+
+- name: Install ArgoCD (GitOps)
+  hosts: k3s-server
+  become: true
+  roles:
+    - argocd

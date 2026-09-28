@@ -12,3 +12,6 @@ system_timezone: "Asia/Karachi" # logs tumhare local time mein
 
 # VCN CIDR for intra-cluster host-firewall rules (mirrors OCI security list).
 vcn_cidr: "10.0.0.0/16"
+
+# ArgoCD version (pinned; bump via PR). Installed via official manifests.
+argocd_version: "v3.5.3"
