@@ -55,6 +55,26 @@ jobs:
       - name: Check formatting
         run: terraform fmt -check -recursive -diff
 
+      - name: Configure OCI auth
+        run: |
+          mkdir -p ~/.oci
+          printf '%s\n' "$OCI_PRIVATE_KEY" > ~/.oci/oci_api_key.pem
+          chmod 600 ~/.oci/oci_api_key.pem
+          cat > ~/.oci/config <<EOF
+          [DEFAULT]
+          tenancy=$OCI_TENANCY_OCID
+          user=$OCI_USER_OCID
+          fingerprint=$OCI_FINGERPRINT
+          key_file=$HOME/.oci/oci_api_key.pem
+          region=eu-frankfurt-1
+          EOF
+          chmod 600 ~/.oci/config
+        env:
+          OCI_TENANCY_OCID: ${{ secrets.OCI_TENANCY_OCID }}
+          OCI_USER_OCID: ${{ secrets.OCI_USER_OCID }}
+          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
+
       - name: Init (R2 backend)
         run: |
           cat > backend.r2.hcl <<'EOF'
@@ -119,6 +139,26 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
           terraform_wrapper: false
+
+      - name: Configure OCI auth
+        run: |
+          mkdir -p ~/.oci
+          printf '%s\n' "$OCI_PRIVATE_KEY" > ~/.oci/oci_api_key.pem
+          chmod 600 ~/.oci/oci_api_key.pem
+          cat > ~/.oci/config <<EOF
+          [DEFAULT]
+          tenancy=$OCI_TENANCY_OCID
+          user=$OCI_USER_OCID
+          fingerprint=$OCI_FINGERPRINT
+          key_file=$HOME/.oci/oci_api_key.pem
+          region=eu-frankfurt-1
+          EOF
+          chmod 600 ~/.oci/config
+        env:
+          OCI_TENANCY_OCID: ${{ secrets.OCI_TENANCY_OCID }}
+          OCI_USER_OCID: ${{ secrets.OCI_USER_OCID }}
+          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
 
       - name: Init (R2 backend)
         run: |
