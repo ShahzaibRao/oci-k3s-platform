@@ -16,11 +16,3 @@ module "compute" {
   ssh_public_key       = var.ssh_public_key
   nodes                = var.nodes
 }
-
-module "lb" {
-  source           = "./modules/lb"
-  compartment_id   = var.compartment_id
-  subnet_id        = module.network.subnet_id
-  name_prefix      = var.name_prefix
-  node_private_ips = module.compute.private_ips
-}
