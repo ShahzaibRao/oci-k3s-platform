@@ -198,6 +198,7 @@ jobs:
 
       - name: Generate Ansible inventory
         run: |
+          mkdir -p ../ansible
           terraform output -json > tf-outputs.json
           python3 - <<'PYEOF'
           import json
