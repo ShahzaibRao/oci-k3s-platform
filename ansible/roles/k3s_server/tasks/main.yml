@@ -1,5 +1,77 @@
 ---
-# Placeholder — real tasks land in step 3 (k3s_server role).
-- name: Skeleton check
-  ansible.builtin.debug:
-    msg: "k3s_server: skeleton OK — install logic comes in step 3."
+# k3s_server — k3s server install (embedded etcd, schedulable).
+# Cilium step 4 mein CNI banega; agent step 5 mein join karega.
+
+- name: Check installed k3s version
+  ansible.builtin.command: /usr/local/bin/k3s --version
+  register: k3s_installed_version
+  changed_when: false
+  failed_when: false
+
+- name: Fail if a different k3s minor version is installed
+  ansible.builtin.fail:
+    msg: >-
+      k3s already installed ({{ k3s_installed_version.stdout | trim }}),
+      but k3s_version={{ k3s_version }} is desired.
+      Upgrades are explicit — handle manually, then re-run.
+  when:
+    - k3s_installed_version.rc == 0
+    - k3s_version not in k3s_installed_version.stdout
+
+- name: Ensure k3s config dir exists
+  ansible.builtin.file:
+    path: /etc/rancher/k3s
+    state: directory
+    mode: "0755"
+
+- name: Write k3s server config
+  ansible.builtin.copy:
+    dest: /etc/rancher/k3s/config.yaml
+    mode: "0600"
+    content: |
+      # Managed by Ansible (k3s_server role) — do not edit by hand.
+      cluster-init: true            # embedded etcd; single node now, HA-ready later
+      flannel-backend: none         # Cilium is the CNI (step 4)
+      disable-network-policy: true  # Cilium handles policy
+      disable-kube-proxy: true      # Cilium kubeProxyReplacement (step 4)
+      disable:
+        - traefik                   # apna Traefik DaemonSet + Gateway API ayega (design 6.4)
+      etcd-snapshot-schedule-cron: "0 */6 * * *"
+      etcd-snapshot-retention: 72    # 72 x 6h ~= 18 days
+      tls-san:
+        - "{{ ansible_host }}"      # public IP, taake kubectl remote se chale
+  notify: Restart k3s
+
+- name: Download k3s install script
+  ansible.builtin.get_url:
+    url: https://get.k3s.io
+    dest: /tmp/k3s-install.sh
+    mode: "0755"
+  when: k3s_installed_version.rc != 0
+
+- name: Install k3s server
+  ansible.builtin.command:
+    cmd: /tmp/k3s-install.sh server
+    creates: /usr/local/bin/k3s
+  environment:
+    # minor pin: script resolves latest v1.33 patch via the release channel
+    INSTALL_K3S_CHANNEL: "{{ k3s_version }}"
+
+- name: Ensure k3s service is enabled and started
+  ansible.builtin.systemd:
+    name: k3s
+    enabled: true
+    state: started
+
+- name: Wait for the API kubeconfig
+  ansible.builtin.wait_for:
+    path: /etc/rancher/k3s/k3s.yaml
+    timeout: 180
+
+- name: Verify API responds
+  ansible.builtin.command: /usr/local/bin/k3s kubectl get nodes
+  register: k3s_nodes
+  changed_when: false
+  retries: 12
+  delay: 10
+  until: k3s_nodes.rc == 0
