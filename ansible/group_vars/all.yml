@@ -12,3 +12,7 @@ system_timezone: "Asia/Karachi" # logs tumhare local time mein
 
 # VCN CIDR for intra-cluster host-firewall rules (mirrors OCI security list).
 vcn_cidr: "10.0.0.0/16"
+
+# Traefik + Gateway API versions (pinned; bump via PR).
+traefik_chart_version: "41.6.0" # Traefik v3.7.x
+gateway_api_version: "v1.5.1" # standard channel; supported by Traefik v3.7

@@ -21,3 +21,9 @@
   become: true
   roles:
     - k3s_agent
+
+- name: Install Traefik with Gateway API
+  hosts: k3s-server
+  become: true
+  roles:
+    - traefik
