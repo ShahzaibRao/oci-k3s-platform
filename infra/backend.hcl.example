@@ -1,0 +1,16 @@
+# Backend config for LOCAL runs only. Never commit the real file.
+# In CI, -backend-config flags are passed by the workflow instead.
+
+bucket = "tfstate-k3s"
+key    = "oci-k3s/terraform.tfstate"
+region = "auto"
+
+endpoints = {
+  s3 = "https://<ACCOUNT_ID>.r2.cloudflarestorage.com"
+}
+
+skip_credentials_validation = true
+skip_metadata_api_check      = true
+skip_region_validation       = true
+skip_requesting_account_id   = true
+use_lockfile                 = true
