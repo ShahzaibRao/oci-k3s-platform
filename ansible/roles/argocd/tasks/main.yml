@@ -4,8 +4,9 @@
 # Installed via Ansible; apps managed via GitOps after bootstrap.
 
 - name: Create argocd namespace
-  ansible.builtin.command:
+  ansible.builtin.shell:
     cmd: kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+    # shell (not command): pipe requires a shell.
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   register: argocd_ns
