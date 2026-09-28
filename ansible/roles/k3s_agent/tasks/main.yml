@@ -1,5 +1,76 @@
 ---
-# Placeholder — real tasks land in step 5 (k3s_agent role).
-- name: Skeleton check
-  ansible.builtin.debug:
-    msg: "k3s_agent: skeleton OK — join logic comes in step 5."
+# k3s_agent — join the agent node to the k3s cluster.
+# Runs after k3s_server. Retrieves the server node-token securely
+# (never printed, never committed) and joins via the server private IP.
+
+- name: Check installed k3s version
+  ansible.builtin.command: /usr/local/bin/k3s --version
+  register: k3s_installed_version
+  changed_when: false
+  failed_when: false
+
+- name: Fail if a different k3s minor version is installed
+  ansible.builtin.fail:
+    msg: >-
+      k3s already installed ({{ k3s_installed_version.stdout | trim }}),
+      but k3s_version={{ k3s_version }} is desired.
+      Upgrades are explicit — handle manually, then re-run.
+  when:
+    - k3s_installed_version.rc == 0
+    - k3s_version not in k3s_installed_version.stdout
+
+- name: Retrieve server node-token securely
+  ansible.builtin.slurp:
+    src: /var/lib/rancher/k3s/server/node-token
+  delegate_to: "{{ groups['k3s-server'][0] }}"
+  register: k3s_node_token
+  no_log: true
+  when: k3s_installed_version.rc != 0
+
+- name: Ensure k3s config dir exists
+  ansible.builtin.file:
+    path: /etc/rancher/k3s
+    state: directory
+    mode: "0755"
+  when: k3s_installed_version.rc != 0
+
+- name: Write node-token file securely
+  ansible.builtin.copy:
+    dest: /etc/rancher/k3s/node-token
+    mode: "0600"
+    content: "{{ k3s_node_token.content | b64decode | trim }}"
+  no_log: true
+  when: k3s_installed_version.rc != 0
+
+- name: Write k3s agent config
+  ansible.builtin.copy:
+    dest: /etc/rancher/k3s/config.yaml
+    mode: "0600"
+    content: |
+      # Managed by Ansible (k3s_agent role) — do not edit by hand.
+      server: https://{{ hostvars[groups['k3s-server'][0]]['ansible_default_ipv4']['address'] }}:6443
+      token-file: /etc/rancher/k3s/node-token
+  notify: Restart k3s-agent
+  when: k3s_installed_version.rc != 0
+
+- name: Download k3s install script
+  ansible.builtin.get_url:
+    url: https://get.k3s.io
+    dest: /tmp/k3s-install.sh
+    mode: "0755"
+  when: k3s_installed_version.rc != 0
+
+- name: Install k3s agent
+  ansible.builtin.command:
+    cmd: /tmp/k3s-install.sh agent
+    creates: /usr/local/bin/k3s
+  environment:
+    # minor pin: script resolves latest v1.36 patch via the release channel
+    INSTALL_K3S_CHANNEL: "{{ k3s_version }}"
+  when: k3s_installed_version.rc != 0
+
+- name: Ensure k3s-agent service is enabled and started
+  ansible.builtin.systemd:
+    name: k3s-agent
+    enabled: true
+    state: started
