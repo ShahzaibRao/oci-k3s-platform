@@ -1,0 +1,5 @@
+---
+# Placeholder — real tasks land in step 5 (k3s_agent role).
+- name: Skeleton check
+  ansible.builtin.debug:
+    msg: "k3s_agent: skeleton OK — join logic comes in step 5."

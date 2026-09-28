@@ -1,0 +1,5 @@
+---
+# Placeholder — real tasks land in step 2 (common role).
+- name: Skeleton check
+  ansible.builtin.debug:
+    msg: "common: skeleton OK — SSH + become work, logic comes in step 2."

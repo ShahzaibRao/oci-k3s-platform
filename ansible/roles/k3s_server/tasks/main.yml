@@ -1,0 +1,5 @@
+---
+# Placeholder — real tasks land in step 3 (k3s_server role).
+- name: Skeleton check
+  ansible.builtin.debug:
+    msg: "k3s_server: skeleton OK — install logic comes in step 3."

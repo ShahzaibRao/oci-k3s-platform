@@ -1,0 +1,4 @@
+---
+# Ansible Galaxy collections. Installed in CI before site.yml runs.
+collections:
+  - name: ansible.posix # sysctl, firewalld, etc. (used by common/cilium roles)
