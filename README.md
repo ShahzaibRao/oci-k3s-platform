@@ -34,8 +34,8 @@ Full design: [`DESIGN.md`](DESIGN.md) · Decision log: [`ARCHITECTURE.md`](ARCHI
 │       ├── infra/      # platform components (each feature-flagged)
 │       └── workloads/  # page-manager-pro, creatorwatch (namespace per app)
 └── .github/workflows/
-    ├── infra.yml   # terraform apply → inventory → ansible site.yml
-    └── drift.yml   # every 15 min: auto-recreate missing VMs, alert other drift
+    ├── infra.yml   # plan on PR/push → apply (manual approval) → inventory artifact
+    └── drift.yml   # every 15 min: auto-recreate missing VMs, alert other drift (planned)
 ```
 
 ## Disaster recovery

@@ -1,0 +1,241 @@
+# .github/workflows/infra.yml
+# Terraform CI/CD — OCI k3s platform (milestone 1: network + compute)
+#
+# Flow:
+#   1. Har push/PR par: fmt check -> init (R2 backend) -> validate -> plan
+#   2. Apply SIRF tab hota hai jab tum Actions mein "oci-production"
+#      environment ka pending approval accept karo. Koi auto-apply nahi.
+#   3. Apply ke baad ansible/inventory.ini auto-generate ho kar ek chhoti
+#      PR mein aati hai (tum merge karo, git pull karo — koi download nahi).
+
+name: infra
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra.yml'
+  pull_request:
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terraform-infra
+  cancel-in-progress: false
+
+env:
+  TF_VERSION: '1.9.8'
+  TF_IN_AUTOMATION: 'true'
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+jobs:
+  plan:
+    name: fmt / validate / plan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Check formatting
+        run: terraform fmt -check -recursive -diff
+
+      - name: Configure OCI auth
+        run: |
+          mkdir -p ~/.oci
+          printf '%s\n' "$OCI_PRIVATE_KEY" > ~/.oci/oci_api_key.pem
+          chmod 600 ~/.oci/oci_api_key.pem
+          cat > ~/.oci/config <<EOF
+          [DEFAULT]
+          tenancy=$OCI_TENANCY_OCID
+          user=$OCI_USER_OCID
+          fingerprint=$OCI_FINGERPRINT
+          key_file=$HOME/.oci/oci_api_key.pem
+          region=eu-frankfurt-1
+          EOF
+          chmod 600 ~/.oci/config
+        env:
+          OCI_TENANCY_OCID: ${{ secrets.OCI_TENANCY_OCID }}
+          OCI_USER_OCID: ${{ secrets.OCI_USER_OCID }}
+          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
+
+      - name: Init (R2 backend)
+        run: |
+          cat > backend.r2.hcl <<'EOF'
+          bucket                      = "tfstate-k3s"
+          key                         = "oci-k3s/terraform.tfstate"
+          region                      = "auto"
+          endpoints = {
+            s3 = "https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com"
+          }
+          skip_credentials_validation = true
+          skip_metadata_api_check     = true
+          skip_region_validation      = true
+          skip_requesting_account_id  = true
+          EOF
+          terraform init -input=false -backend-config=backend.r2.hcl
+
+      - name: Validate
+        run: terraform validate
+
+      - name: Plan
+        run: terraform plan -input=false -out=tfplan
+        env:
+          OCI_TENANCY_OCID: ${{ secrets.OCI_TENANCY_OCID }}
+          OCI_USER_OCID: ${{ secrets.OCI_USER_OCID }}
+          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
+          TF_VAR_tenancy_ocid: ${{ secrets.TF_VAR_TENANCY_OCID }}
+          TF_VAR_compartment_id: ${{ secrets.TF_VAR_COMPARTMENT_ID }}
+          TF_VAR_ssh_public_key: ${{ secrets.TF_VAR_SSH_PUBLIC_KEY }}
+          TF_VAR_admin_cidr: ${{ secrets.TF_VAR_ADMIN_CIDR != '' && secrets.TF_VAR_ADMIN_CIDR || '0.0.0.0/0' }}
+          TF_VAR_cloudflare_zone_id: ${{ secrets.TF_VAR_CLOUDFLARE_ZONE_ID }}
+          TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
+
+      - name: Show plan summary
+        run: terraform show -no-color tfplan >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload plan file
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: infra/tfplan
+          retention-days: 7
+
+  apply:
+    name: apply (manual approval)
+    runs-on: ubuntu-latest
+    needs: plan
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: oci-production
+    permissions:
+      contents: write
+      pull-requests: write
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Configure OCI auth
+        run: |
+          mkdir -p ~/.oci
+          printf '%s\n' "$OCI_PRIVATE_KEY" > ~/.oci/oci_api_key.pem
+          chmod 600 ~/.oci/oci_api_key.pem
+          cat > ~/.oci/config <<EOF
+          [DEFAULT]
+          tenancy=$OCI_TENANCY_OCID
+          user=$OCI_USER_OCID
+          fingerprint=$OCI_FINGERPRINT
+          key_file=$HOME/.oci/oci_api_key.pem
+          region=eu-frankfurt-1
+          EOF
+          chmod 600 ~/.oci/config
+        env:
+          OCI_TENANCY_OCID: ${{ secrets.OCI_TENANCY_OCID }}
+          OCI_USER_OCID: ${{ secrets.OCI_USER_OCID }}
+          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
+
+      - name: Init (R2 backend)
+        run: |
+          cat > backend.r2.hcl <<'EOF'
+          bucket                      = "tfstate-k3s"
+          key                         = "oci-k3s/terraform.tfstate"
+          region                      = "auto"
+          endpoints = {
+            s3 = "https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com"
+          }
+          skip_credentials_validation = true
+          skip_metadata_api_check     = true
+          skip_region_validation      = true
+          skip_requesting_account_id  = true
+          EOF
+          terraform init -input=false -backend-config=backend.r2.hcl
+
+      - name: Download plan file
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: infra
+
+      - name: Apply approved plan
+        run: terraform apply -input=false tfplan
+        env:
+          OCI_TENANCY_OCID: ${{ secrets.OCI_TENANCY_OCID }}
+          OCI_USER_OCID: ${{ secrets.OCI_USER_OCID }}
+          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
+          TF_VAR_tenancy_ocid: ${{ secrets.TF_VAR_TENANCY_OCID }}
+          TF_VAR_compartment_id: ${{ secrets.TF_VAR_COMPARTMENT_ID }}
+          TF_VAR_ssh_public_key: ${{ secrets.TF_VAR_SSH_PUBLIC_KEY }}
+          TF_VAR_admin_cidr: ${{ secrets.TF_VAR_ADMIN_CIDR != '' && secrets.TF_VAR_ADMIN_CIDR || '0.0.0.0/0' }}
+          TF_VAR_cloudflare_zone_id: ${{ secrets.TF_VAR_CLOUDFLARE_ZONE_ID }}
+          TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
+
+      - name: Generate Ansible inventory
+        run: |
+          terraform output -json > tf-outputs.json
+          python3 - <<'PYEOF'
+          import json
+          pub = json.load(open('tf-outputs.json'))['node_public_ips']['value']
+          with open('../ansible/inventory.ini', 'w') as f:
+              f.write("# AUTO-GENERATED by infra.yml after apply — do not edit by hand\n")
+              for name, ip in sorted(pub.items()):
+                  f.write(f"[{name}]\n{ip} ansible_user=ubuntu\n\n")
+          print(open('../ansible/inventory.ini').read())
+          PYEOF
+        env:
+          OCI_TENANCY_OCID: ${{ secrets.OCI_TENANCY_OCID }}
+          OCI_USER_OCID: ${{ secrets.OCI_USER_OCID }}
+          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
+          TF_VAR_tenancy_ocid: ${{ secrets.TF_VAR_TENANCY_OCID }}
+          TF_VAR_compartment_id: ${{ secrets.TF_VAR_COMPARTMENT_ID }}
+          TF_VAR_ssh_public_key: ${{ secrets.TF_VAR_SSH_PUBLIC_KEY }}
+          TF_VAR_admin_cidr: ${{ secrets.TF_VAR_ADMIN_CIDR != '' && secrets.TF_VAR_ADMIN_CIDR || '0.0.0.0/0' }}
+          TF_VAR_cloudflare_zone_id: ${{ secrets.TF_VAR_CLOUDFLARE_ZONE_ID }}
+          TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
+
+      - name: Open inventory update PR
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BRANCH="ci/inventory-${{ github.run_id }}"
+          git checkout -b "$BRANCH"
+          git add ansible/inventory.ini
+          if git diff --cached --quiet; then
+            echo "Inventory unchanged — no PR needed."
+            exit 0
+          fi
+          git commit -m "ci: update ansible inventory from terraform outputs"
+          git push -u origin "$BRANCH"
+          gh pr create --base main --head "$BRANCH" \
+            --title "ci: update ansible inventory" \
+            --body "Auto-generated by infra.yml after apply (terraform output node_public_ips). Merge, then git pull — Ansible milestone isay use karega."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
