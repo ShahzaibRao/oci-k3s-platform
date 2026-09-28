@@ -64,6 +64,11 @@
           hostPort: 80
         websecure:
           hostPort: 443
+      # ClusterIP, not LoadBalancer: we use hostPort via DaemonSet directly.
+      # LoadBalancer would trigger k3s ServiceLB (svclb) which binds host
+      # ports 80/443 itself and blocks the DaemonSet pods from scheduling.
+      service:
+        type: ClusterIP
       providers:
         kubernetesGateway:
           enabled: true
