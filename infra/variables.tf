@@ -39,6 +39,18 @@ variable "domain_name" {
   default     = "raoshahzaib.site"
 }
 
+variable "vcn_cidr" {
+  type        = string
+  description = "CIDR block for the VCN"
+  default     = "10.0.0.0/16"
+}
+
+variable "subnet_cidr" {
+  type        = string
+  description = "CIDR block for the public subnet (nodes + load balancer)"
+  default     = "10.0.1.0/24"
+}
+
 variable "cloudflare_zone_id" {
   type        = string
   description = "Cloudflare zone ID for domain_name (Dashboard → domain → Overview)"
