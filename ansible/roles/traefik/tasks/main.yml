@@ -83,11 +83,14 @@
       --namespace traefik --create-namespace
       --version {{ traefik_chart_version }}
       -f /tmp/traefik-values.yaml
-      --wait --timeout 5m
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   register: traefik_helm
   changed_when: "'has been upgraded' in traefik_helm.stdout or 'has been installed' in traefik_helm.stdout"
+  # NOTE: no --wait here. On the LoadBalancer->ClusterIP migration, the old
+  # svclb pods hold hostPorts 80/443 until the Service type changes; --wait
+  # would timeout waiting for DaemonSet pods that cannot schedule yet.
+  # Verification is a separate manual step (kubectl get pods -n traefik).
 
 - name: Write GatewayClass and Gateway manifests
   ansible.builtin.copy:
