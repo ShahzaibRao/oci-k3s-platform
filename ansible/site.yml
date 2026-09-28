@@ -1,7 +1,8 @@
 ---
 # site.yml — full cluster build. Runs in CI (.github/workflows/ansible.yml).
-# Order matters: common -> k3s_server -> cilium -> k3s_agent
-# (Cilium must be the CNI before the agent joins and workloads land.)
+# Order matters: common -> k3s_server -> k3s_agent
+# (Cilium removed 2026-09-28: pod->API failed with Cilium 1.17/1.19.
+#  Default flannel+kube-proxy proven working on this OCI VM.)
 
 - name: Base OS prep
   hosts: all
@@ -14,12 +15,6 @@
   become: true
   roles:
     - k3s_server
-
-- name: Install Cilium CNI (eBPF, Hubble)
-  hosts: k3s-server
-  become: true
-  roles:
-    - cilium
 
 - name: Join k3s agent via node-token
   hosts: k3s-agent

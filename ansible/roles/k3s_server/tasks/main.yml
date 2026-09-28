@@ -31,9 +31,11 @@
     content: |
       # Managed by Ansible (k3s_server role) — do not edit by hand.
       cluster-init: true            # embedded etcd; single node now, HA-ready later
-      flannel-backend: none         # Cilium is the CNI (step 4)
-      disable-network-policy: true  # Cilium handles policy
-      disable-kube-proxy: true      # Cilium kubeProxyReplacement (step 4)
+      # Default CNI: flannel (vxlan) + kube-proxy.
+      # Cilium removed 2026-09-28 after pod->API connectivity failed with
+      # Cilium 1.17 and 1.19 (even with ipv4NativeRoutingCIDR fix).
+      # Default networking proven working on this OCI VM. Cilium is a
+      # separate future milestone if needed.
       disable:
         - traefik                   # apna Traefik DaemonSet + Gateway API ayega (design 6.4)
       etcd-snapshot-schedule-cron: "0 */6 * * *"
