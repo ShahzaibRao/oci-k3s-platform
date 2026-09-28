@@ -28,3 +28,25 @@
     content: "{{ system_timezone }}\n"
     dest: /etc/timezone
     mode: "0644"
+
+# Host firewall: OCI security list allows all intra-VCN traffic, but the
+# Ubuntu image's iptables REJECTs everything except SSH (22). Mirror the
+# security list here so nodes can reach each other (k3s API 6443, kubelet
+# 10250, flannel VXLAN 8472, etc.). Rules persist via iptables-persistent.
+- name: Install iptables-persistent
+  ansible.builtin.apt:
+    name: iptables-persistent
+    state: present
+
+- name: Check if VCN ACCEPT rule exists
+  ansible.builtin.command:
+    cmd: iptables -C INPUT -s {{ vcn_cidr }} -j ACCEPT
+  register: vcn_iptables_check
+  changed_when: false
+  failed_when: false
+
+- name: Allow intra-VCN traffic in INPUT chain
+  ansible.builtin.command:
+    cmd: iptables -I INPUT 1 -s {{ vcn_cidr }} -j ACCEPT
+  when: vcn_iptables_check.rc != 0
+  notify: Save iptables rules

@@ -9,3 +9,6 @@ k3s_version: "v1.36" # minor pin; install script resolves latest patch via the v
 k3s_server_taints: []
 
 system_timezone: "Asia/Karachi" # logs tumhare local time mein
+
+# VCN CIDR for intra-cluster host-firewall rules (mirrors OCI security list).
+vcn_cidr: "10.0.0.0/16"
