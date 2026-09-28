@@ -1,0 +1,5 @@
+---
+# Placeholder — real tasks land in step 4 (cilium role).
+- name: Skeleton check
+  ansible.builtin.debug:
+    msg: "cilium: skeleton OK — install logic comes in step 4."

@@ -1,0 +1,48 @@
+# ansible.yml — run the k3s playbook from CI.
+#
+# Trigger: manual "Run workflow" only (clicking it IS the approval).
+# The SSH private key comes from the ANSIBLE_SSH_PRIVATE_KEY secret;
+# the inventory is the auto-generated ansible/inventory.ini on main.
+
+name: ansible
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ansible
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: ansible
+
+jobs:
+  site:
+    name: ansible-playbook site.yml
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Ansible
+        run: pip install ansible
+
+      - name: Install Galaxy collections
+        run: ansible-galaxy collection install -r requirements.yml
+
+      - name: Write SSH key
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$ANSIBLE_SSH_PRIVATE_KEY" > ~/.ssh/id_ansible
+          chmod 600 ~/.ssh/id_ansible
+        env:
+          ANSIBLE_SSH_PRIVATE_KEY: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}
+
+      - name: Run playbook
+        run: ansible-playbook -i inventory.ini site.yml --private-key ~/.ssh/id_ansible
