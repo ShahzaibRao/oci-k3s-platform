@@ -12,7 +12,9 @@ spec:
     - list:
         # Step-by-step: only the current milestone's app is listed.
         # Each PR adds its app name + apps/<name>/ manifests together.
+        # cert-manager-crds must sync before cert-manager (CRDs first).
         elements:
+          - name: cert-manager-crds
           - name: cert-manager
           - name: sealed-secrets
           - name: cloudflare-issuer

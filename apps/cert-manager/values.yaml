@@ -1,4 +1,6 @@
 # Values for the upstream cert-manager chart.
-# CRDs must be installed for cert-manager to work.
+# CRDs are managed separately via the cert-manager-crds app (plain YAML
+# in git) because ArgoCD's helm template does not install chart CRDs.
+# Keep this false to avoid conflicts.
 crds:
-  enabled: true
+  enabled: false
