@@ -36,3 +36,10 @@ resources:
   requests:
     cpu: 100m
     memory: 128Mi
+
+# Fix: chart defaults to bitnami/kubectl:1.36 which does not exist on
+# Docker Hub (ImagePullBackOff). Pin to a known-good tag for the
+# CRD upgrade job.
+kubectl:
+  image:
+    tag: "1.32.2"
