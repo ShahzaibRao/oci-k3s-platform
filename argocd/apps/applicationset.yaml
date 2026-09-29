@@ -15,6 +15,8 @@ spec:
         # cert-manager-crds must sync before cert-manager (CRDs first).
         # Optional 'namespace' overrides the default (which is the app name).
         # Longhorn requires longhorn-system (hardcoded in its chart).
+        # Optional 'skipHooks' (true/false) adds SkipHooks sync option.
+        # Longhorn's pre-upgrade Job hook gets stuck in ArgoCD; skip it.
         elements:
           - name: cert-manager-crds
           - name: cert-manager
@@ -24,9 +26,14 @@ spec:
             namespace: argocd
           - name: longhorn
             namespace: longhorn-system
+            skipHooks: "true"
   template:
     metadata:
       name: "{{ .name }}"
+      {{ if eq .skipHooks "true" }}
+      annotations:
+        argocd.argoproj.io/sync-options: SkipHooks=true
+      {{ end }}
     spec:
       project: default
       source:
