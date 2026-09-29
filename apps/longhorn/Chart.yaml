@@ -1,0 +1,9 @@
+apiVersion: v2
+name: longhorn
+description: Longhorn distributed block storage via ArgoCD ApplicationSet (Helm dependency)
+version: 1.0.0
+# Pinned upstream chart; bump version via PR.
+dependencies:
+  - name: longhorn
+    version: 1.12.1
+    repository: https://charts.longhorn.io

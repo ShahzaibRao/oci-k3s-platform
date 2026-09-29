@@ -1,0 +1,14 @@
+# Longhorn values — distributed block storage for Kubernetes.
+# Design: replica count 2 (both nodes), default StorageClass enabled.
+# R2 backup target comes later (separate milestone).
+
+persistence:
+  # Make longhorn the default StorageClass (replaces local-path).
+  defaultClass: true
+  defaultClassReplicaCount: 2
+
+defaultSettings:
+  # Every volume gets 2 replicas across nodes by default.
+  defaultReplicaCount: 2
+  # Keep failed replica cleanup automatic.
+  replicaAutoBalance: least-effort
