@@ -25,6 +25,7 @@ spec:
           - name: cloudflare-issuer
           - name: argocd-ingress
             namespace: argocd
+          - name: velero
   template:
     metadata:
       name: "{{ .name }}"
