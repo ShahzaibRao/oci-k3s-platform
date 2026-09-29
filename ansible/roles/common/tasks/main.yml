@@ -50,3 +50,22 @@
     cmd: iptables -I INPUT 1 -s {{ vcn_cidr }} -j ACCEPT
   when: vcn_iptables_check.rc != 0
   notify: Save iptables rules
+
+# Traefik Ingress serves HTTP/HTTPS to the public internet.
+# The Ubuntu image's iptables REJECTs everything except SSH by default;
+# without these rules, argocd.raoshahzaib.site (and future app domains)
+# are unreachable from outside the VCN.
+- name: Check if HTTP/HTTPS ACCEPT rules exist
+  ansible.builtin.command:
+    cmd: iptables -C INPUT -p tcp --dport {{ item }} -j ACCEPT
+  loop: [80, 443]
+  register: web_iptables_check
+  changed_when: false
+  failed_when: false
+
+- name: Allow HTTP/HTTPS in INPUT chain (for Traefik Ingress)
+  ansible.builtin.command:
+    cmd: iptables -I INPUT 1 -p tcp --dport {{ item.item }} -j ACCEPT
+  loop: "{{ web_iptables_check.results }}"
+  when: item.rc != 0
+  notify: Save iptables rules
