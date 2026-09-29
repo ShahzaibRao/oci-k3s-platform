@@ -14,6 +14,7 @@ spec:
         # Each PR adds its app name + apps/<name>/ manifests together.
         elements:
           - name: cert-manager
+          - name: sealed-secrets
   template:
     metadata:
       name: "{{ .name }}"
