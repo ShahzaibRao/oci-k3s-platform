@@ -1,0 +1,38 @@
+# Velero -> Cloudflare R2 (S3-compatible)
+# DR target: full cluster rebuild restores PV data from R2.
+configuration:
+  backupStorageLocation:
+    - name: default
+      provider: aws
+      bucket: oci-k3s-velero
+      config:
+        region: auto
+        s3ForcePathStyle: "true"
+        s3Url: https://70bb4330aeae9769fe3c30a1e167a06d.r2.cloudflarestorage.com
+  volumeSnapshotLocation:
+    - name: default
+      provider: aws
+      config:
+        region: auto
+
+# R2 credentials come from the SealedSecret in sealed-secret.yaml
+credentials:
+  useSecret: true
+  name: velero-r2-credentials
+
+# Daily backup, 30-day TTL (per DESIGN.md)
+schedules:
+  daily-backup:
+    schedule: "0 2 * * *"
+    template:
+      ttl: 720h
+      includedNamespaces:
+        - argocd
+        - cert-manager
+        - sealed-secrets
+
+# Small cluster resources
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
