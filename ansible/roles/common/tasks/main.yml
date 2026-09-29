@@ -13,6 +13,7 @@
       - ca-certificates # GitHub/OCI endpoints se TLS
       - jq # agle steps mein exact version pinning ke liye
       - gnupg # kabhi repo key add karni pari to
+      - open-iscsi # Longhorn block storage ke liye zaroori (host-level iSCSI)
     state: present
 
 # timedatectl ke barabar, sirf builtin modules se (koi extra collection nahi).

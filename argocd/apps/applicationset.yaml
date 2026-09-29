@@ -19,6 +19,7 @@ spec:
           - name: sealed-secrets
           - name: cloudflare-issuer
           - name: argocd-ingress
+          - name: longhorn
   template:
     metadata:
       name: "{{ .name }}"
