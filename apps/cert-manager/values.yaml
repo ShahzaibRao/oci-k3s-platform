@@ -1,0 +1,4 @@
+# Values for the upstream cert-manager chart.
+# CRDs must be installed for cert-manager to work.
+crds:
+  enabled: true
