@@ -13,13 +13,17 @@ spec:
         # Step-by-step: only the current milestone's app is listed.
         # Each PR adds its app name + apps/<name>/ manifests together.
         # cert-manager-crds must sync before cert-manager (CRDs first).
+        # Optional 'namespace' overrides the default (which is the app name).
+        # Longhorn requires longhorn-system (hardcoded in its chart).
         elements:
           - name: cert-manager-crds
           - name: cert-manager
           - name: sealed-secrets
           - name: cloudflare-issuer
           - name: argocd-ingress
+            namespace: argocd
           - name: longhorn
+            namespace: longhorn-system
   template:
     metadata:
       name: "{{ .name }}"
@@ -31,7 +35,7 @@ spec:
         path: "apps/{{ .name }}"
       destination:
         server: https://kubernetes.default.svc
-        namespace: "{{ .name }}"
+        namespace: "{{ .namespace | default .name }}"
       syncPolicy:
         automated:
           prune: true # remove app when deleted from the list
