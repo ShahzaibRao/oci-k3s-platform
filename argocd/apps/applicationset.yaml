@@ -14,9 +14,10 @@ spec:
         # Each PR adds its app name + apps/<name>/ manifests together.
         # cert-manager-crds must sync before cert-manager (CRDs first).
         # Optional 'namespace' overrides the default (which is the app name).
-        # Longhorn requires longhorn-system (hardcoded in its chart).
-        # Optional 'skipHooks' (true/false) adds SkipHooks sync option.
-        # Longhorn's pre-upgrade Job hook gets stuck in ArgoCD; skip it.
+        # Storage: k3s built-in local-path-provisioner is the default
+        # StorageClass. Longhorn was removed (its pre-upgrade Helm hook
+        # gets stuck under ArgoCD); Velero+R2 handles backup/restore for
+        # full cluster rebuilds, which is the DR target.
         elements:
           - name: cert-manager-crds
           - name: cert-manager
@@ -24,16 +25,9 @@ spec:
           - name: cloudflare-issuer
           - name: argocd-ingress
             namespace: argocd
-          - name: longhorn
-            namespace: longhorn-system
-            skipHooks: "true"
   template:
     metadata:
       name: "{{ .name }}"
-      {{ if eq .skipHooks "true" }}
-      annotations:
-        argocd.argoproj.io/sync-options: SkipHooks=true
-      {{ end }}
     spec:
       project: default
       source:
