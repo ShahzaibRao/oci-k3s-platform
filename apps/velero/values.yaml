@@ -43,3 +43,8 @@ resources:
 kubectl:
   image:
     tag: "1.32.2"
+
+# Fresh install: CRDs are installed by the chart; no upgrade needed.
+# The upgrade-crds PreSync hook Job blocks ArgoCD sync when its image
+# can't be pulled. Disable it.
+upgradeCRDs: false
