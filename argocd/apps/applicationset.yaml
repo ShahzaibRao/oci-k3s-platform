@@ -4,7 +4,7 @@ metadata:
   name: k3s-applications
   namespace: argocd
   # Generates one Application per list element. Each app's manifests live in
-  # k3s-apps/<name>/ (created by follow-up PRs). Add a name here to onboard
+  # apps/<name>/ (created by follow-up PRs). Add a name here to onboard
   # a new app — no new YAML file needed.
 spec:
   goTemplate: true
@@ -22,7 +22,7 @@ spec:
       source:
         repoURL: https://github.com/ShahzaibRao/oci-k3s-platform.git
         targetRevision: main
-        path: "k3s-apps/{{ .name }}"
+        path: "apps/{{ .name }}"
       destination:
         server: https://kubernetes.default.svc
         namespace: "{{ .name }}"
