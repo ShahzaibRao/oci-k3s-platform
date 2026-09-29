@@ -10,10 +10,10 @@ spec:
   goTemplate: true
   generators:
     - list:
+        # Step-by-step: only the current milestone's app is listed.
+        # Each PR adds its app name + apps/<name>/ manifests together.
         elements:
-          - name: external-secrets
           - name: cert-manager
-          - name: longhorn
   template:
     metadata:
       name: "{{ .name }}"
