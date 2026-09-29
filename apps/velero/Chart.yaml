@@ -1,8 +1,0 @@
-apiVersion: v2
-name: velero
-description: Velero backup to Cloudflare R2 via ArgoCD ApplicationSet (Helm dependency)
-version: 1.0.0
-dependencies:
-  - name: velero
-    version: 9.0.0
-    repository: https://vmware-tanzu.github.io/helm-charts
