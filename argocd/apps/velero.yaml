@@ -1,0 +1,67 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: velero
+  namespace: argocd
+  # Static Application (not via ApplicationSet): uses the Velero Helm chart
+  # directly from the upstream repo. The wrapper-chart pattern
+  # (apps/velero/Chart.yaml with velero as dependency) caused values to
+  # not reach the subchart, leaving upgradeCRDs enabled and the
+  # velero-upgrade-crds hook Job stuck in ImagePullBackOff.
+spec:
+  project: default
+  sources:
+    # 1. Velero Helm chart with inline values
+    - chart: velero
+      repoURL: https://vmware-tanzu.github.io/helm-charts
+      targetRevision: 9.0.0
+      helm:
+        values: |
+          configuration:
+            backupStorageLocation:
+              - name: default
+                provider: aws
+                bucket: oci-k3s-velero
+                config:
+                  region: auto
+                  s3ForcePathStyle: "true"
+                  s3Url: https://70bb4330aeae9769fe3c30a1e167a06d.r2.cloudflarestorage.com
+            volumeSnapshotLocation:
+              - name: default
+                provider: aws
+                config:
+                  region: auto
+          credentials:
+            useSecret: true
+            name: velero-r2-credentials
+          schedules:
+            daily-backup:
+              schedule: "0 2 * * *"
+              template:
+                ttl: 720h
+                includedNamespaces:
+                  - argocd
+                  - cert-manager
+                  - sealed-secrets
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          kubectl:
+            image:
+              tag: "1.32.2"
+          # Fresh install: no CRD upgrade needed. The hook Job blocked sync.
+          upgradeCRDs: false
+    # 2. R2 credentials SealedSecret from Git
+    - repoURL: https://github.com/ShahzaibRao/oci-k3s-platform.git
+      targetRevision: main
+      path: apps/velero
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: velero
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

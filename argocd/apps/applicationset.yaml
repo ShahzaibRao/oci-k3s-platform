@@ -25,7 +25,9 @@ spec:
           - name: cloudflare-issuer
           - name: argocd-ingress
             namespace: argocd
-          - name: velero
+        # velero uses a static Application (argocd/apps/velero.yaml) with
+        # the Helm chart directly — the wrapper-chart pattern caused
+        # values to not reach the subchart.
   template:
     metadata:
       name: "{{ .name }}"
