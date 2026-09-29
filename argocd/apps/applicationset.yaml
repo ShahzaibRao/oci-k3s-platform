@@ -15,6 +15,7 @@ spec:
         elements:
           - name: cert-manager
           - name: sealed-secrets
+          - name: cloudflare-issuer
   template:
     metadata:
       name: "{{ .name }}"
