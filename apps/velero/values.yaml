@@ -1,38 +1,41 @@
 # Velero values — captured from the working manual Helm install (2026-09-30).
 # Credentials come from ESO (velero-r2-credentials Secret), not from values.
-configuration:
-  backupStorageLocation:
-  - bucket: oci-k3s-velero
-    config:
-      region: auto
-      s3ForcePathStyle: true
-      s3Url: https://70bb4330aeae9769fe3c30a1e167a06d.r2.cloudflarestorage.com
-    name: default
-    provider: aws
-  volumeSnapshotLocation:
-  - config:
-      region: auto
-    name: default
-    provider: aws
-credentials:
-  name: velero-r2-credentials
-  useSecret: true
-initContainers:
-- image: velero/velero-plugin-for-aws:v1.10.0
-  name: velero-plugin-for-aws
-  volumeMounts:
-  - mountPath: /target
-    name: plugins
-kubectl:
-  image:
-    tag: 1.32.2
-schedules:
-  daily-backup:
-    schedule: 0 2 * * *
-    template:
-      includedNamespaces:
-      - argocd
-      - cert-manager
-      - external-secrets
-      ttl: 720h
-upgradeCRDs: false
+# NOTE: All values nested under `velero:` so they reach the subchart
+# (wrapper-chart pattern: parent values don't auto-propagate).
+velero:
+  configuration:
+    backupStorageLocation:
+    - bucket: oci-k3s-velero
+      config:
+        region: auto
+        s3ForcePathStyle: true
+        s3Url: https://70bb4330aeae9769fe3c30a1e167a06d.r2.cloudflarestorage.com
+      name: default
+      provider: aws
+    volumeSnapshotLocation:
+    - config:
+        region: auto
+      name: default
+      provider: aws
+  credentials:
+    name: velero-r2-credentials
+    useSecret: true
+  initContainers:
+  - image: velero/velero-plugin-for-aws:v1.10.0
+    name: velero-plugin-for-aws
+    volumeMounts:
+    - mountPath: /target
+      name: plugins
+  kubectl:
+    image:
+      tag: 1.32.2
+  schedules:
+    daily-backup:
+      schedule: 0 2 * * *
+      template:
+        includedNamespaces:
+        - argocd
+        - cert-manager
+        - external-secrets
+        ttl: 720h
+  upgradeCRDs: false
