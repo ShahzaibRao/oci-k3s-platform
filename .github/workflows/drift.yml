@@ -1,0 +1,149 @@
+# .github/workflows/drift.yml
+# Daily drift detection — Git vs real OCI infra
+#
+# Flow:
+#   1. Roz subah 6 AM (PKT) par terraform plan -detailed-exitcode
+#   2. Exit 0 = no drift, sab theek
+#   3. Exit 2 = DRIFT! GitHub Issue auto-banega (kuch change NAHI hoga)
+#   4. Fix: code mein karo, push karo — ya infra.yml se apply karo
+
+name: drift-detection
+
+on:
+  schedule:
+    # Daily 1 AM UTC = 6 AM PKT
+    - cron: '0 1 * * *'
+  workflow_dispatch:  # manual trigger bhi
+
+permissions:
+  contents: read
+  issues: write  # drift issue banane ke liye
+
+env:
+  TF_VERSION: '1.9.8'
+  TF_IN_AUTOMATION: 'true'
+
+jobs:
+  detect:
+    name: Check for drift
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Configure OCI auth
+        run: |
+          mkdir -p ~/.oci
+          printf '%s\n' "$OCI_PRIVATE_KEY" > ~/.oci/oci_api_key.pem
+          chmod 600 ~/.oci/oci_api_key.pem
+          cat > ~/.oci/config <<EOF
+          [DEFAULT]
+          tenancy=$OCI_TENANCY_OCID
+          user=$OCI_USER_OCID
+          fingerprint=$OCI_FINGERPRINT
+          key_file=$HOME/.oci/oci_api_key.pem
+          region=eu-frankfurt-1
+          EOF
+          chmod 600 ~/.oci/config
+        env:
+          OCI_TENANCY_OCID: ${{ secrets.OCI_TENANCY_OCID }}
+          OCI_USER_OCID: ${{ secrets.OCI_USER_OCID }}
+          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
+
+      - name: Init (R2 backend)
+        run: |
+          cat > backend.r2.hcl <<'EOF'
+          bucket                      = "tfstate-k3s"
+          key                         = "oci-k3s/terraform.tfstate"
+          region                      = "auto"
+          endpoints = {
+            s3 = "https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com"
+          }
+          skip_credentials_validation = true
+          skip_metadata_api_check     = true
+          skip_region_validation      = true
+          skip_requesting_account_id  = true
+          EOF
+          terraform init -input=false -backend-config=backend.r2.hcl
+
+      - name: Plan (detailed exit code)
+        id: plan
+        run: |
+          set +e
+          terraform plan -detailed-exitcode -input=false -no-color -out=tfplan
+          EXIT_CODE=$?
+          echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
+          set -e
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "No drift — infra matches Git"
+          elif [ $EXIT_CODE -eq 2 ]; then
+            echo "DRIFT DETECTED — infra differs from Git"
+            terraform show -no-color tfplan > drift.txt
+          else
+            echo "Terraform error"
+            exit 1
+          fi
+        env:
+          OCI_TENANCY_OCID: ${{ secrets.OCI_TENANCY_OCID }}
+          OCI_USER_OCID: ${{ secrets.OCI_USER_OCID }}
+          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
+          TF_VAR_tenancy_ocid: ${{ secrets.TF_VAR_TENANCY_OCID }}
+          TF_VAR_compartment_id: ${{ secrets.TF_VAR_COMPARTMENT_ID }}
+          TF_VAR_ssh_public_key: ${{ secrets.TF_VAR_SSH_PUBLIC_KEY }}
+          TF_VAR_admin_cidr: ${{ secrets.TF_VAR_ADMIN_CIDR != '' && secrets.TF_VAR_ADMIN_CIDR || '0.0.0.0/0' }}
+          TF_VAR_cloudflare_zone_id: ${{ secrets.TF_VAR_CLOUDFLARE_ZONE_ID }}
+          TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
+          TF_VAR_r2_access_key_id: ${{ secrets.TF_VAR_R2_ACCESS_KEY_ID }}
+          TF_VAR_r2_secret_access_key: ${{ secrets.TF_VAR_R2_SECRET_ACCESS_KEY }}
+
+      - name: Create drift alert issue
+        if: steps.plan.outputs.exit_code == '2'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const drift = fs.readFileSync('infra/drift.txt', 'utf8').slice(0, 60000);
+            const title = 'Infra drift detected — ' + new Date().toISOString().slice(0, 10);
+            // Purani open drift issue hai to nayi mat banao
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'drift',
+            });
+            const body = `## Drift detected\n\nGit aur real OCI infra mein farq hai!\n\n**Fix:** Code mein karo, push karo. Manual console fix nahi.\n\n<details><summary>Plan output</summary>\n\n\`\`\`\n${drift}\n\`\`\`\n</details>`;
+            if (issues.length > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issues[0].number,
+                body: 'Drift abhi bhi hai (dobara detect hua).\n\n' + body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['drift'],
+              });
+            }
+
+      - name: Summary
+        run: |
+          if [ "${{ steps.plan.outputs.exit_code }}" = "0" ]; then
+            echo "No drift detected" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Drift detected — issue created" >> "$GITHUB_STEP_SUMMARY"
+          fi
