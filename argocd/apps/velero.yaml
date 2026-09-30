@@ -15,11 +15,11 @@ spec:
       values: |
         configuration:
           backupStorageLocation:
-          - bucket: ${R2_BUCKET}
+          - bucket: oci-k3s-velero
             config:
               region: auto
               s3ForcePathStyle: true
-              s3Url: ${R2_ENDPOINT}
+              s3Url: https://70bb4330aeae9769fe3c30a1e167a06d.r2.cloudflarestorage.com
             name: default
             provider: aws
           volumeSnapshotLocation:
