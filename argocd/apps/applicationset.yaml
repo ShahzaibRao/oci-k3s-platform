@@ -37,8 +37,8 @@ spec:
           - name: argocd
             namespace: argocd
             syncWave: "1"
-        # velero uses a static Application (argocd/apps/velero.yaml) with
-        # the Helm chart directly — the wrapper-chart pattern caused
+        # velero and monitoring use static Applications (argocd/apps/*.yaml)
+        # with the Helm chart directly — the wrapper-chart pattern caused
         # values to not reach the subchart.
   template:
     metadata:
