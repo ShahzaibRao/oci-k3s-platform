@@ -16,3 +16,20 @@ module "compute" {
   ssh_public_key       = var.ssh_public_key
   nodes                = var.nodes
 }
+
+module "vault" {
+  source         = "./modules/vault"
+  compartment_id = var.compartment_id
+  name_prefix    = var.name_prefix
+
+  # Add future secrets here as "vault-secret-name" = var.some_variable.
+  # Each value comes from TF_VAR_* in CI — never commit plaintext.
+  secrets = {
+    "velero-r2-credentials" = join("\n", [
+      "[default]",
+      "aws_access_key_id=${var.r2_access_key_id}",
+      "aws_secret_access_key=${var.r2_secret_access_key}",
+    ])
+    "cloudflare-api-token" = var.cloudflare_api_token
+  }
+}

@@ -62,6 +62,18 @@ variable "cloudflare_api_token" {
   sensitive   = true
 }
 
+variable "r2_access_key_id" {
+  type        = string
+  description = "Cloudflare R2 S3 API access key (Velero backups). Never commit — TF_VAR_ in CI."
+  sensitive   = true
+}
+
+variable "r2_secret_access_key" {
+  type        = string
+  description = "Cloudflare R2 S3 API secret key (Velero backups). Never commit — TF_VAR_ in CI."
+  sensitive   = true
+}
+
 variable "nodes" {
   type = map(object({
     ad_index                = number
