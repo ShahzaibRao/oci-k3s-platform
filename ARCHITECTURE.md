@@ -28,7 +28,7 @@ DevSecOps at every layer.
 ├── gitops/
 │   ├── bootstrap/  # root app (app-of-apps) — only thing Ansible applies
 │   └── apps/
-│       ├── infra/      # sealed-secrets, cilium-policies, cert-manager,
+│       ├── infra/      # external-secrets, cilium-policies, cert-manager,
 │       │               # traefik, velero, kube-prometheus-stack,
 │       │               # falco, cnpg (feature-flagged, disabled by default)
 │       └── workloads/  # page-manager-pro, creatorwatch (namespace per app)
@@ -52,7 +52,7 @@ DevSecOps at every layer.
 | TLS | cert-manager, DNS-01 via Cloudflare, wildcard cert, auto-renew |
 | GitOps | ArgoCD app-of-apps; auto-sync + prune + selfHeal on all apps |
 | Image updates | **ArgoCD Image Updater** watches GHCR (fits frequent vibe-code updates) |
-| Secrets | Sealed Secrets; **controller private key backed up to R2** (scheduled) and restored on rebuild — else old secrets undecryptable. **90-day key rotation runbook** (re-encrypt all, backup new key, keep old 1 cycle) |
+| Secrets | **ESO + OCI Vault**; secrets live in OCI Vault (Terraform-managed), ESO syncs them to K8s via ExternalSecret manifests. No in-cluster private key to back up — rebuild just re-pulls from Vault |
 | Database | **Contract:** apps only consume a `DATABASE_URL` secret — implementation is swappable. **Default:** Supabase Postgres (free tier). **Risk defense:** keep-alive cron (pause rokne ke liye) + daily `pg_dump` → R2 (90d paused → delete hota hai; free tier ka apna backup nahi). **Optional:** CNPG operator as feature-flagged infra app (`enabled: false` default) |
 | Multi-tenancy | Namespace per app + ResourceQuota + LimitRange + Cilium default-deny NetworkPolicy per namespace |
 | Resilience | PodDisruptionBudgets on infra components; feature flags (`enabled:`) on every infra app in app-of-apps |
@@ -71,7 +71,7 @@ DevSecOps at every layer.
 | k3s server+agent | 1.5 GB |
 | Cilium + Hubble | 1.0 GB |
 | ArgoCD (+ Image Updater) | 1.5 GB |
-| Traefik + cert-manager + sealed-secrets | 0.7 GB |
+| Traefik + cert-manager + external-secrets | 0.7 GB |
 | kube-prometheus-stack | 2.5 GB |
 | Velero + Falco | 0.6 GB |
 | page-manager-pro (2 pods) | 1.0 GB |
@@ -91,7 +91,7 @@ Security workflows live in each **app repo** (not the infra repo):
 | IaC | No hardcoded secrets (env/GitHub secrets only); R2 remote state + lockfile; **Checkov** scan in `infra.yml` (fail on HIGH) — *planned, next infra PR* |
 | CI/CD | **Trivy** image scan on every build (fail on HIGH/CRITICAL before push); **SonarCloud** SAST + quality gate (free: both repos public) |
 | Containers | Non-root USER; distroless/minimal + multi-stage builds |
-| Cluster | Sealed Secrets (+ key backup); PSS `restricted`; Cilium default-deny NetworkPolicies |
+| Cluster | ESO + OCI Vault; PSS `restricted`; Cilium default-deny NetworkPolicies |
 | Runtime | **Falco** (eBPF threat detection) → alerts to Grafana |
 | TLS | cert-manager, DNS-01, wildcard cert, auto-renew |
 
@@ -118,7 +118,7 @@ Trigger: VM deleted / region issue / manual.
 1. `infra.yml` (manual dispatch): terraform apply → new VMs
 2. Same workflow: generate inventory → `ansible-playbook site.yml`
    (k3s rebuild → Cilium → ArgoCD install → root app)
-3. Restore **sealed-secrets private key** from R2 (before app sync)
+3. ESO auto-syncs secrets from OCI Vault (no manual restore)
 4. ArgoCD syncs infra + workloads from git
 5. cert-manager reissues wildcard cert (DNS-01, automatic)
 6. Terraform updates LB backends to new node IPs (DNS unchanged — points at LB)
@@ -130,7 +130,7 @@ Known SPOF: single k3s server. Accepted for free tier; stated openly.
 
 ## Buckets to create (manual, one-time)
 - `tfstate-k3s` — Terraform state
-- `velero-backups` — Velero backups + sealed-secrets key backup
+- `velero-backups` — Velero backups
 - R2 S3 API token (read/write) → GitHub secret
 
 ## GitHub secrets needed (at build time)
@@ -141,16 +141,16 @@ Known SPOF: single k3s server. Accepted for free tier; stated openly.
 
 ## App pipelines
 - **page-manager-pro**: 2 images (nextjs frontend, express backend; Dockerfiles exist).
-  `FB_SYSTEM_USER_TOKEN` + Supabase connection string via SealedSecret.
+  `FB_SYSTEM_USER_TOKEN` + Supabase connection string via ExternalSecret (ESO).
   Uploads staging on small PVC (Longhorn, replica 2).
   Pipeline: build → Trivy → SonarCloud* → Docker Hub → Image Updater → ArgoCD.
 - **creatorwatch**: 1 image (Flask + yt-dlp; Dockerfile to be written: python-slim,
   non-root). Media downloads on dedicated PVC (~30GB, Longhorn replica 2).
-  Supabase connection string via SealedSecret. Same pipeline.
+  Supabase connection string via ExternalSecret (ESO). Same pipeline.
   (* SonarCloud recommended; final pick pending)
 
 ## Phases
-- **Phase 1:** infra + k3s (Cilium) + ArgoCD + sealed-secrets (+ key backup) + Velero. Platform up, no apps
+- **Phase 1:** infra + k3s (Cilium) + ArgoCD + ESO + OCI Vault + Velero. Platform up, no apps
 - **Phase 2:** traefik/Gateway API + cert-manager + page-manager-pro live (first real user traffic)
 - **Phase 3:** creatorwatch live (Dockerfile + pipeline + media PVC)
 - **Phase 4:** monitoring + Falco + DR drill (delete VM, rebuild, verify RTO). Loki if needed
