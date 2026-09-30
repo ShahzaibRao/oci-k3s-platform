@@ -22,6 +22,9 @@ spec:
           - name: cert-manager-crds
           - name: cert-manager
           - name: external-secrets
+          - name: velero
+            namespace: velero
+            syncWave: "2"
           - name: cloudflare-issuer
           - name: argocd-ingress
             namespace: argocd
@@ -31,6 +34,8 @@ spec:
   template:
     metadata:
       name: "{{ .name }}"
+      annotations:
+        argocd.argoproj.io/sync-wave: '{{ .syncWave | default "0" }}'
     spec:
       project: default
       source:
@@ -46,3 +51,4 @@ spec:
           selfHeal: true # revert manual changes
         syncOptions:
           - CreateNamespace=true
+
