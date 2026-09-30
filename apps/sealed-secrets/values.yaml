@@ -1,5 +1,0 @@
-# Values for the upstream sealed-secrets chart.
-# Defaults are production-safe:
-# - scope defaults to strict (SealedSecret locked to namespace+name)
-# - controller auto-generates its RSA key pair on first install.
-# Key backup (for cluster rebuilds) is a separate runbook step.
