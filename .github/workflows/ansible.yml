@@ -50,19 +50,26 @@ jobs:
       # Bootstrap for External Secrets Operator: ESO needs OCI API credentials
       # to read from OCI Vault. Created here (not in Git) from CI secrets.
       # Runs via SSH on k3s-server where kubectl + kubeconfig exist.
+      # NOTE: env vars are passed explicitly in the ssh command because the
+      # heredoc (<<'SSH_EOF') does not inherit the runner's environment.
+      # The private key is base64-encoded to survive the SSH transport.
       - name: Create ESO OCI credentials secret
         run: |
           SERVER_IP=$(grep -A1 '\[k3s-server\]' inventory.ini | tail -1 | awk '{print $1}')
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ansible ubuntu@$SERVER_IP <<'SSH_EOF'
+          PRIVATEKEY_B64=$(printf '%s' "$OCI_PRIVATE_KEY" | base64 -w0)
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ansible \
+            "ubuntu@$SERVER_IP" \
+            "TENANCY='$OCI_TENANCY_OCID' USER_OCID='$OCI_USER_OCID' FINGERPRINT='$OCI_FINGERPRINT' PRIVATEKEY_B64='$PRIVATEKEY_B64' bash -s" <<'SSH_EOF'
           set -e
+          PRIVATEKEY=$(printf '%s' "$PRIVATEKEY_B64" | base64 -d)
           # All kubectl via sudo with explicit KUBECONFIG (file is root-owned)
           sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl create namespace external-secrets --dry-run=client -o yaml | sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl apply -f -
           sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl create secret generic oci-credentials \
             --namespace external-secrets \
-            --from-literal=tenancy="$OCI_TENANCY_OCID" \
-            --from-literal=user="$OCI_USER_OCID" \
-            --from-literal=fingerprint="$OCI_FINGERPRINT" \
-            --from-literal=privatekey="$OCI_PRIVATE_KEY" \
+            --from-literal=tenancy="$TENANCY" \
+            --from-literal=user="$USER_OCID" \
+            --from-literal=fingerprint="$FINGERPRINT" \
+            --from-literal=privatekey="$PRIVATEKEY" \
             --dry-run=client -o yaml | sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl apply -f -
           sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl get secret oci-credentials -n external-secrets
           SSH_EOF
