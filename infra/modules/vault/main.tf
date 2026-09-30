@@ -12,16 +12,32 @@ resource "oci_kms_vault" "k3s" {
   vault_type     = "DEFAULT" # free tier
 }
 
+# Master encryption key for the secrets (free tier: 20 keys included)
+resource "oci_kms_key" "k3s" {
+  compartment_id      = var.compartment_id
+  display_name        = "${var.name_prefix}-secrets-key"
+  management_endpoint = oci_kms_vault.k3s.management_endpoint
+
+  key_shape {
+    algorithm = "AES"
+    length    = 32
+  }
+}
+
 # One oci_vault_secret per entry in var.secrets — add future secrets by
 # adding a line to the secrets map in infra/main.tf, no module change needed.
+#
+# NOTE: for_each uses nonsensitive(keys(...)) because secret NAMES are not
+# sensitive (only values are), and Terraform forbids sensitive for_each keys.
 resource "oci_vault_secret" "secrets" {
-  for_each       = var.secrets
+  for_each       = toset(nonsensitive(keys(var.secrets)))
   compartment_id = var.compartment_id
   vault_id       = oci_kms_vault.k3s.id
+  key_id         = oci_kms_key.k3s.id
   secret_name    = each.key
 
   secret_content {
     content_type = "BASE64"
-    content      = base64encode(each.value)
+    content      = base64encode(var.secrets[each.key])
   }
 }
