@@ -15,3 +15,8 @@ output "vcn_id" {
 output "subnet_id" {
   value = module.network.subnet_id
 }
+
+output "vault_id" {
+  description = "OCID of the secrets vault (for External Secrets Operator ClusterSecretStore)"
+  value       = module.vault.vault_id
+}
