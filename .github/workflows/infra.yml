@@ -250,14 +250,15 @@ jobs:
                 auth:
                   tenancy: ${{ secrets.OCI_TENANCY_OCID }}
                   user: ${{ secrets.OCI_USER_OCID }}
-                  fingerprint:
-                    name: oci-credentials
-                    key: fingerprint
-                    namespace: external-secrets
-                  privatekey:
-                    name: oci-credentials
-                    key: privatekey
-                    namespace: external-secrets
+                  secretRef:
+                    fingerprint:
+                      name: oci-credentials
+                      key: fingerprint
+                      namespace: external-secrets
+                    privatekey:
+                      name: oci-credentials
+                      key: privatekey
+                      namespace: external-secrets
           EOF
           echo "Generated clustersecretstore.yaml"
           cat ../apps/external-secrets/templates/clustersecretstore.yaml
