@@ -1,0 +1,77 @@
+# Values for kube-prometheus-stack Helm chart.
+# Full docs: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+
+# --- Prometheus ---
+prometheus:
+  prometheusSpec:
+    # Chhoti VMs ke liye retention kam (default 10d)
+    retention: 7d
+    # Resource limits taake cluster hang na ho
+    resources:
+      requests:
+        cpu: 200m
+        memory: 400Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+    # WAL compression (disk bachao)
+    walCompression: true
+
+# --- Grafana ---
+grafana:
+  # Resource limits
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  # Domain par Grafana
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hosts:
+      - grafana.raoshahzaib.site
+    tls:
+      - secretName: grafana-raoshahzaib-site-tls
+        hosts:
+          - grafana.raoshahzaib.site
+  # Admin password: pehle login par change karna!
+  # Default user: admin
+  adminPassword: "admin123-change-me"
+
+# --- Alertmanager (halka hai, chalne do) ---
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 100Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+# --- kube-state-metrics ---
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# --- node-exporter (har node par chalta hai) ---
+nodeExporter:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# NOTE: k3s ka built-in metrics-server (kube-system) delete NAHI karna.
+# Wo 'kubectl top' ke liye hai, Prometheus se conflict nahi karta.
+# kube-prometheus-stack mein metrics-server included nahi hai.
