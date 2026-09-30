@@ -128,7 +128,7 @@ for build/test workloads.
 | Bucket | Purpose | Versioning |
 |---|---|---|
 | `tfstate-k3s` | Terraform state | ON |
-| `velero-backups` | Velero PV backups + sealed-secrets key backups + etcd snapshots | ON |
+| `velero-backups` | Velero PV backups + etcd snapshots | ON |
 
 ### 5.6 Terraform workflow
 - **Backend:** S3-compatible (R2), native lockfile (`use_lockfile`), partial config via CI flags
@@ -189,7 +189,7 @@ gitops/
 ├── bootstrap/root.yaml      # App-of-apps. ONLY object Ansible applies
 └── apps/
     ├── infra/               # one dir per component, each with enabled: flag
-    └── workloads/<app>/     # namespace, quota, netpol, HTTPRoute, SealedSecrets
+    └── workloads/<app>/     # namespace, quota, netpol, HTTPRoute, ExternalSecrets
 ```
 
 ### 7.2 ArgoCD
@@ -199,14 +199,14 @@ gitops/
 
 ### 7.3 Application onboarding contract (new app checklist)
 1. Namespace + quota + limitrange + default-deny netpol
-2. `DATABASE_URL` SealedSecret (Supabase or CNPG — app doesn't care)
+2. `DATABASE_URL` ExternalSecret (Supabase or CNPG — app doesn't care)
 3. PVCs (if any) with nodeAffinity
 4. `HTTPRoute` for public exposure
 5. PDB if >1 replica
 6. Image Updater annotation for auto-deploys
 
 ### 7.4 Database abstraction
-- **Contract:** app reads `DATABASE_URL` from env (SealedSecret). Nothing else.
+- **Contract:** app reads `DATABASE_URL` from env (ESO-synced Secret). Nothing else.
 - **Default implementation:** Supabase Postgres
 - **Supabase risk defense (free tier has no backups; 90d paused → deleted):**
   keep-alive cron (GitHub Actions pings `/auth/v1/health` every 2–3 days) +
@@ -248,7 +248,7 @@ push/PR → gitleaks → build → Trivy image scan (fail on HIGH/CRITICAL)
 ### 9.1 Threat model (top risks)
 | Threat | Mitigation |
 |---|---|
-| Secret leaked in git | gitleaks (local + CI), SealedSecrets, 90-day rotation |
+| Secret leaked in git | gitleaks (local + CI), ESO + OCI Vault (no secrets in git) |
 | Compromised container escapes | non-root, read-only FS where possible, PSS restricted, Falco alerts |
 | Lateral movement pod→pod | default-deny Cilium policies per namespace |
 | Stale/vulnerable image | Trivy gate, Image Updater keeps tags fresh |
@@ -256,7 +256,7 @@ push/PR → gitleaks → build → Trivy image scan (fail on HIGH/CRITICAL)
 | Data loss | Velero daily, etcd snapshots 6-hourly, Supabase backups |
 
 ### 9.2 Secrets management
-- **At rest in git:** SealedSecrets (age-encrypted); plaintext never committed
+- **At rest in git:** ExternalSecret manifests (reference only); plaintext never committed — values live in OCI Vault
 - **Controller key:** backed up to R2 (scheduled CronJob); restored before app sync in DR
 - **Rotation:** 90-day runbook — new key → `kubeseal --re-encrypt` all → backup new key → keep old 1 cycle → rolling restart → verify
 - **CI secrets:** GitHub Secrets; OCI private key never leaves CI
@@ -311,7 +311,7 @@ push/PR → gitleaks → build → Trivy image scan (fail on HIGH/CRITICAL)
 ### 12.3 Rebuild order (full)
 1. `infra.yml` manual dispatch → Terraform apply → new VMs
 2. Inventory → `ansible-playbook site.yml` (k3s → Cilium → ArgoCD → root app)
-3. Restore sealed-secrets key from R2
+3. ESO pulls secrets from OCI Vault automatically (no key restore needed)
 4. ArgoCD sync **infra only**
 5. Velero restore (data back)
 6. ArgoCD sync **workloads** (apps start on restored data)
@@ -363,14 +363,14 @@ Full step-by-step with exact commands → `RUNBOOK.md` (written at implementatio
 | Second LB or >10 Mbps shape | Low | Unexpected charges | Terraform pins exactly 1 LB at 10 Mbps; budget alert |
 | R2 free tier exceeded | Low | Backup failures | Alert on bucket size; retention policy |
 | Operator error (bad apply) | Med | Outage | PR plan reviews; etcd snapshots; Velero |
-| Sealed-secrets key lost | Low | Secrets undecryptable | R2 backup + rotation runbook |
+| OCI Vault unavailable | Low | Secrets not syncable | Vault is regional HA; ESO retries with backoff |
 | Scope creep (too many components) | Med | Unmaintainable | Feature flags; phased rollout; this doc |
 
 ---
 
 ## 16. Rollout Phases
 
-- **Phase 1:** infra + k3s (Cilium/etcd) + ArgoCD + sealed-secrets (+key backup) + Velero. No apps
+- **Phase 1:** infra + k3s (Cilium/etcd) + ArgoCD + ESO + OCI Vault + Velero. No apps
 - **Phase 2:** Traefik/Gateway API + cert-manager + page-manager-pro live
 - **Phase 3:** creatorwatch live (Dockerfile + media PVC)
 - **Phase 4:** monitoring + Falco + DR drill (delete a VM, measure RTO). Loki/CNPG if needed
@@ -386,8 +386,8 @@ Full step-by-step with exact commands → `RUNBOOK.md` (written at implementatio
 *§4, §8: SonarCloud shown as recommended default until you pick.*
 
 ## Appendix A — Resource budget (~9.5 GB / 24 GB)
-k3s 1.5 · Cilium/Hubble 1.0 · ArgoCD(+updater) 1.5 · Traefik/cert-manager/sealed-secrets 0.7 ·
+k3s 1.5 · Cilium/Hubble 1.0 · ArgoCD(+updater) 1.5 · Traefik/cert-manager 0.7 · ESO 0.10.5 ·
 monitoring 2.5 · Velero/Falco 0.6 · apps 1.5. Disk: ~72/90 GB per node.
 
 ## Appendix B — Glossary
-RTO/RPO, GitOps, eBPF, Gateway API, SealedSecrets, PDB, PSP→PSS, DR, SPOF.
+RTO/RPO, GitOps, eBPF, Gateway API, ESO, PDB, PSP→PSS, DR, SPOF.
