@@ -18,13 +18,25 @@ spec:
         # StorageClass. Longhorn was removed (its pre-upgrade Helm hook
         # gets stuck under ArgoCD); Velero+R2 handles backup/restore for
         # full cluster rebuilds, which is the DR target.
+        # Sync waves: 0 = foundation (operators, CRDs, stores),
+        # 1 = secrets/issuers/ingress (need foundation),
+        # 2 = apps needing secrets (velero Helm chart is static).
         elements:
           - name: cert-manager-crds
+            syncWave: "0"
           - name: cert-manager
+            syncWave: "0"
           - name: external-secrets
-          - name: cloudflare-issuer
-          - name: argocd-ingress
+            syncWave: "0"
+          - name: cloudflare
+            namespace: cert-manager
+            syncWave: "1"
+          - name: velero-secrets
+            namespace: velero
+            syncWave: "1"
+          - name: argocd
             namespace: argocd
+            syncWave: "1"
         # velero uses a static Application (argocd/apps/velero.yaml) with
         # the Helm chart directly — the wrapper-chart pattern caused
         # values to not reach the subchart.
