@@ -11,3 +11,10 @@ name_prefix = "k3s"
 admin_cidr = "0.0.0.0/0" # <-- lock this down before apply
 
 ssh_public_key = "ssh-ed25519 AAAA... you@example"
+
+# Cloudflare R2 (Velero backups) — from R2 dashboard → Manage R2 API Tokens
+r2_access_key_id     = "your-r2-access-key"
+r2_secret_access_key = "your-r2-secret-key"
+
+# Cloudflare API token with Zone:DNS:Edit (cert-manager DNS-01)
+cloudflare_api_token = "your-cloudflare-api-token"
