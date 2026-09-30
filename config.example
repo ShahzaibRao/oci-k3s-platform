@@ -1,0 +1,19 @@
+# Template Configuration
+# Copy this file to 'config' and fill in your values:
+#   cp config.example config
+# Then run: ./scripts/setup.sh
+#
+# The setup script replaces ${VARIABLE} placeholders in manifests
+# with your values. Never commit the 'config' file (it's gitignored).
+
+# Your domain (e.g. example.com)
+DOMAIN=raoshahzaib.site
+
+# Email for Let's Encrypt certificates
+EMAIL=contact@raoshahzaib.site
+
+# Cloudflare R2 bucket for Velero backups
+R2_BUCKET=oci-k3s-velero
+
+# Cloudflare R2 S3-compatible endpoint
+R2_ENDPOINT=https://70bb4330aeae9769fe3c30a1e167a06d.r2.cloudflarestorage.com
