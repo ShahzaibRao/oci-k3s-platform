@@ -1,13 +1,13 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: wildcard-${DOMAIN_DASH}
+  name: wildcard-raoshahzaib-site
   namespace: argocd
 spec:
-  secretName: wildcard-${DOMAIN_DASH}-tls
+  secretName: wildcard-raoshahzaib-site-tls
   issuerRef:
     name: letsencrypt-cloudflare
     kind: ClusterIssuer
   dnsNames:
-    - "*.${DOMAIN}"
-    - "${DOMAIN}"
+    - "*.raoshahzaib.site"
+    - "raoshahzaib.site"

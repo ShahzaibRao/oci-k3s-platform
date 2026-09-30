@@ -30,6 +30,3 @@ Thumbs.db
 # Python
 __pycache__/
 *.pyc
-
-# Template user config (copy from config.example)
-/config

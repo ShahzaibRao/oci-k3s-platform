@@ -7,10 +7,10 @@ spec:
   ingressClassName: traefik
   tls:
     - hosts:
-        - argocd.${DOMAIN}
-      secretName: wildcard-${DOMAIN_DASH}-tls
+        - argocd.raoshahzaib.site
+      secretName: wildcard-raoshahzaib-site-tls
   rules:
-    - host: argocd.${DOMAIN}
+    - host: argocd.raoshahzaib.site
       http:
         paths:
           - path: /

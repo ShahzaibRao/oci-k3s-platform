@@ -7,7 +7,7 @@ spec:
     # Production Let's Encrypt. For testing, use:
     # https://acme-staging-v02.api.letsencrypt.org/directory
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: ${EMAIL}
+    email: contact@raoshahzaib.site
     privateKeySecretRef:
       name: letsencrypt-cloudflare-key
     solvers:
