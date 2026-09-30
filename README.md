@@ -16,7 +16,7 @@ zero-trust security, and tested disaster recovery. **$0/month.**
 | Ingress | Traefik + Kubernetes Gateway API, cert-manager (Cloudflare DNS-01) |
 | GitOps | ArgoCD app-of-apps (auto-sync, prune, self-heal) |
 | Storage | Longhorn (replica 2) → backups to Cloudflare R2 |
-| Secrets | Sealed Secrets (key backed up, 90-day rotation) |
+| Secrets | ESO + OCI Vault (Terraform-managed, auto-sync) |
 | Database | Supabase Postgres via `DATABASE_URL` contract (keep-alive + own pg_dump → R2) |
 | CI/CD | GitHub Actions → Trivy → SonarCloud → Docker Hub → ArgoCD Image Updater |
 | Observability | kube-prometheus-stack, Hubble, Falco |
