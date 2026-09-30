@@ -49,14 +49,25 @@ jobs:
 
       # Bootstrap for External Secrets Operator: ESO needs OCI API credentials
       # to read from OCI Vault. Created here (not in Git) from CI secrets.
+      # Runs via SSH on k3s-server where kubectl + kubeconfig exist.
       - name: Create ESO OCI credentials secret
         run: |
-          kubectl create namespace external-secrets --dry-run=client -o yaml | kubectl apply -f -
+          SERVER_IP=$(grep -A1 '\[k3s-server\]' inventory.ini | tail -1 | awk '{print $1}')
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ansible ubuntu@$SERVER_IP <<'SSH_EOF'
+          set -e
+          export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+          kubectl create namespace external-secrets --dry-run=client -o yaml | sudo kubectl apply -f -
           kubectl create secret generic oci-credentials \
             --namespace external-secrets \
-            --from-literal=tenancy="${{ secrets.OCI_TENANCY_OCID }}" \
-            --from-literal=user="${{ secrets.OCI_USER_OCID }}" \
-            --from-literal=fingerprint="${{ secrets.OCI_FINGERPRINT }}" \
-            --from-literal=privatekey="${{ secrets.OCI_PRIVATE_KEY }}" \
-            --dry-run=client -o yaml | kubectl apply -f -
-          kubectl get secret oci-credentials -n external-secrets
+            --from-literal=tenancy="$OCI_TENANCY_OCID" \
+            --from-literal=user="$OCI_USER_OCID" \
+            --from-literal=fingerprint="$OCI_FINGERPRINT" \
+            --from-literal=privatekey="$OCI_PRIVATE_KEY" \
+            --dry-run=client -o yaml | sudo kubectl apply -f -
+          sudo kubectl get secret oci-credentials -n external-secrets
+          SSH_EOF
+        env:
+          OCI_TENANCY_OCID: ${{ secrets.OCI_TENANCY_OCID }}
+          OCI_USER_OCID: ${{ secrets.OCI_USER_OCID }}
+          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
