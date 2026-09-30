@@ -45,7 +45,11 @@ jobs:
           ANSIBLE_SSH_PRIVATE_KEY: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}
 
       - name: Run playbook
-        run: ansible-playbook -i inventory.ini site.yml --private-key ~/.ssh/id_ansible
+        run: |
+          ansible-playbook -i inventory.ini site.yml --private-key ~/.ssh/id_ansible \
+            -e "r2_account_id=${{ secrets.R2_ACCOUNT_ID }}" \
+            -e "r2_access_key_id=${{ secrets.TF_VAR_R2_ACCESS_KEY_ID }}" \
+            -e "r2_secret_access_key=${{ secrets.TF_VAR_R2_SECRET_ACCESS_KEY }}"
 
       # Bootstrap for External Secrets Operator: ESO needs OCI API credentials
       # to read from OCI Vault. Created here (not in Git) from CI secrets.
