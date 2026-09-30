@@ -1,0 +1,8 @@
+# Values for the upstream external-secrets chart.
+# Installs the operator + CRDs. The ClusterSecretStore (OCI Vault connection)
+# and ExternalSecret resources come in Phase 3.
+#
+# WHY ESO instead of Sealed Secrets: Sealed Secrets keeps its private key
+# inside the cluster — a rebuild makes old SealedSecrets undecryptable.
+# ESO pulls secrets from OCI Vault (outside the cluster), so a fresh
+# cluster just pulls them again. No key to back up.

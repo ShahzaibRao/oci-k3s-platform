@@ -1,0 +1,9 @@
+apiVersion: v2
+name: external-secrets
+description: External Secrets Operator via ArgoCD ApplicationSet (Helm dependency)
+version: 1.0.0
+# Pinned upstream chart; bump version via PR.
+dependencies:
+  - name: external-secrets
+    version: 0.10.5
+    repository: https://charts.external-secrets.io

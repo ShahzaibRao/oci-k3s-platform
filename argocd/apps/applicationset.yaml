@@ -22,6 +22,7 @@ spec:
           - name: cert-manager-crds
           - name: cert-manager
           - name: sealed-secrets
+          - name: external-secrets
           - name: cloudflare-issuer
           - name: argocd-ingress
             namespace: argocd
