@@ -47,8 +47,9 @@
       etcd-s3-skip-ssl-verify: false
       tls-san:
         - "{{ ansible_host }}"      # public IP, taake kubectl remote se chale
-      # NOTE: node-ip nahi set karte — public IP local interface par nahi hoti.
-      # k3s khud private IP detect karta hai. etcd reset par purani IP bhool jata hai.
+      # node-ip: private IP (VM ke andar wali). Public IP bind nahi hoti,
+      # aur etcd snapshot mein purani IP hoti hai — isliye explicit private IP zaroori.
+      node-ip: "{{ ansible_default_ipv4.address }}"
   notify: Restart k3s
 
 - name: Download k3s install script
