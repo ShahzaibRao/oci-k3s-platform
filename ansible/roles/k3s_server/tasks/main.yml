@@ -35,8 +35,9 @@
       etcd-snapshot-schedule-cron: "0 */6 * * *"
       etcd-snapshot-retention: 72    # 72 x 6h ~= 18 days
       # etcd snapshots -> R2 (disaster recovery: server rebuild par purana data wapas)
+      # NOTE: endpoint BARE HOST hona chahiye (bina https://) — k3s khud scheme lagata hai
       etcd-s3: true
-      etcd-s3-endpoint: "https://{{ r2_account_id }}.r2.cloudflarestorage.com"
+      etcd-s3-endpoint: "{{ r2_account_id }}.r2.cloudflarestorage.com"
       etcd-s3-bucket: "oci-k3s-etcd"
       etcd-s3-access-key: "{{ r2_access_key_id }}"
       etcd-s3-secret-key: "{{ r2_secret_access_key }}"
