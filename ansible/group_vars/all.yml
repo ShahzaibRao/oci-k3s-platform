@@ -15,3 +15,7 @@ vcn_cidr: "10.0.0.0/16"
 
 # ArgoCD version (pinned; bump via PR). Installed via official manifests.
 argocd_version: "v3.5.3"
+
+# Disaster recovery: true karo to k3s_server R2 snapshot se etcd restore karega.
+# Default false — normal install. Workflow mein restore_from_backup input se set hota hai.
+k3s_restore_mode: false
