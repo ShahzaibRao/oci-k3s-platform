@@ -32,9 +32,9 @@
       # Managed by Ansible (k3s_server role) — do not edit by hand.
       # Simple default k3s: flannel + kube-proxy + bundled Traefik.
       cluster-init: true            # embedded etcd; single node now, HA-ready later
-{% if k3s_cluster_token | default('') | length > 0 %}
+      {% if k3s_cluster_token | default('') | length > 0 %}
       token: "{{ k3s_cluster_token }}"  # fixed token (GitHub Secret) — DR ke liye zaroori
-{% endif %}
+      {% endif %}
       etcd-snapshot-schedule-cron: "0 */6 * * *"
       etcd-snapshot-retention: 72    # 72 x 6h ~= 18 days
       # etcd snapshots -> R2 (disaster recovery: server rebuild par purana data wapas)
