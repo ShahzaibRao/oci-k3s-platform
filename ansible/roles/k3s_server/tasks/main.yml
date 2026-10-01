@@ -67,9 +67,16 @@
     INSTALL_K3S_SKIP_START: "{{ k3s_restore_mode | bool | ternary('true', 'false') }}"
   no_log: true
 
+- name: Fail if restore mode without snapshot name
+  ansible.builtin.fail:
+    msg: "k3s_restore_mode=true lekin k3s_restore_snapshot khaali hai! R2 se snapshot ka naam do."
+  when:
+    - k3s_restore_mode | bool
+    - k3s_restore_snapshot | default('') | length == 0
+
 - name: Restore etcd from R2 snapshot (disaster recovery, one-time)
   ansible.builtin.command:
-    cmd: /usr/local/bin/k3s server --cluster-reset --config /etc/rancher/k3s/config.yaml
+    cmd: /usr/local/bin/k3s server --cluster-reset --cluster-reset-restore-path={{ k3s_restore_snapshot }} --config /etc/rancher/k3s/config.yaml
   when:
     - k3s_restore_mode | bool
     - k3s_installed_version.rc != 0
