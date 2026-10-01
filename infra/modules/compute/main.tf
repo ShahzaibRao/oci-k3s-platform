@@ -21,6 +21,7 @@ resource "oci_core_instance" "nodes" {
     subnet_id        = var.subnet_id
     assign_public_ip = true
     hostname_label   = each.key
+    private_ip       = each.value.private_ip
   }
 
   metadata = {
