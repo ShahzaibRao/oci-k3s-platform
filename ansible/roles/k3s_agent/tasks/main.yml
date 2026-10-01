@@ -26,14 +26,6 @@
     - k3s_installed_version.rc == 0
     - k3s_version not in k3s_installed_version.stdout
 
-- name: Retrieve server node-token securely
-  ansible.builtin.slurp:
-    src: /var/lib/rancher/k3s/server/node-token
-  delegate_to: "{{ groups['k3s-server'][0] }}"
-  register: k3s_node_token
-  no_log: true
-  when: k3s_installed_version.rc != 0
-
 - name: Ensure k3s config dir exists
   ansible.builtin.file:
     path: /etc/rancher/k3s
@@ -41,13 +33,14 @@
     mode: "0755"
   when: k3s_installed_version.rc != 0
 
-- name: Write node-token file securely
+- name: Write node-token file securely (fixed token from GitHub Secret)
   ansible.builtin.copy:
     dest: /etc/rancher/k3s/node-token
     mode: "0600"
-    content: "{{ k3s_node_token.content | b64decode | trim }}"
+    content: "{{ k3s_cluster_token }}"
   no_log: true
   when: k3s_installed_version.rc != 0
+  # Pehle server se slurp hota tha; ab fixed token — DR mein server se fetch nahi ho sakta.
 
 - name: Write k3s agent config
   ansible.builtin.copy:
