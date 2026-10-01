@@ -13,6 +13,10 @@ on:
         description: 'Disaster recovery: R2 snapshot se etcd restore karo?'
         type: boolean
         default: false
+      restore_snapshot:
+        description: 'Snapshot filename (R2 bucket mein se) — restore ke liye LAZMI'
+        type: string
+        default: ''
 
 concurrency:
   group: ansible
@@ -56,7 +60,8 @@ jobs:
             -e "r2_access_key_id=${{ secrets.TF_VAR_R2_ACCESS_KEY_ID }}" \
             -e "r2_secret_access_key=${{ secrets.TF_VAR_R2_SECRET_ACCESS_KEY }}" \
             -e "k3s_cluster_token=${{ secrets.K3S_CLUSTER_TOKEN }}" \
-            -e "k3s_restore_mode=${{ inputs.restore_from_backup || false }}"
+            -e "k3s_restore_mode=${{ inputs.restore_from_backup || false }}" \
+            -e "k3s_restore_snapshot=${{ inputs.restore_snapshot || '' }}"
 
       # Bootstrap for External Secrets Operator: ESO needs OCI API credentials
       # to read from OCI Vault. Created here (not in Git) from CI secrets.
