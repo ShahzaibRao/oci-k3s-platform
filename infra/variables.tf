@@ -81,6 +81,7 @@ variable "nodes" {
     memory_in_gbs           = number
     boot_volume_size_in_gbs = number
     role                    = string # "server" | "agent" (informational; Ansible uses it)
+    private_ip              = string # static private IP from subnet CIDR (10.0.1.0/24)
   }))
   description = "k3s nodes. Spread across ADs for availability."
 
@@ -91,6 +92,7 @@ variable "nodes" {
       memory_in_gbs           = 12
       boot_volume_size_in_gbs = 90
       role                    = "server"
+      private_ip              = "10.0.1.10"
     }
     "k3s-agent" = {
       ad_index                = 1
@@ -98,6 +100,7 @@ variable "nodes" {
       memory_in_gbs           = 12
       boot_volume_size_in_gbs = 90
       role                    = "agent"
+      private_ip              = "10.0.1.11"
     }
   }
 
