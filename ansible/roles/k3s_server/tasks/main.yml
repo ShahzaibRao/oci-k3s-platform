@@ -47,6 +47,8 @@
       etcd-s3-skip-ssl-verify: false
       tls-san:
         - "{{ ansible_host }}"      # public IP, taake kubectl remote se chale
+      node-ip: "{{ ansible_host }}"           # rebuild par nayi IP (etcd mein purani hai)
+      node-external-ip: "{{ ansible_host }}"
   notify: Restart k3s
 
 - name: Download k3s install script
