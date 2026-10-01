@@ -32,6 +32,7 @@
       # Managed by Ansible (k3s_server role) — do not edit by hand.
       # Simple default k3s: flannel + kube-proxy + bundled Traefik.
       cluster-init: true            # embedded etcd; single node now, HA-ready later
+      token: "{{ k3s_cluster_token }}"  # fixed token (GitHub Secret) — DR ke liye zaroori
       etcd-snapshot-schedule-cron: "0 */6 * * *"
       etcd-snapshot-retention: 72    # 72 x 6h ~= 18 days
       # etcd snapshots -> R2 (disaster recovery: server rebuild par purana data wapas)
@@ -60,6 +61,19 @@
   environment:
     # minor pin: script resolves latest v1.33 patch via the release channel
     INSTALL_K3S_CHANNEL: "{{ k3s_version }}"
+    # Restore mode: service khud start mat karo — pehle cluster-reset hoga
+    INSTALL_K3S_SKIP_START: "{{ k3s_restore_mode | bool | ternary('true', 'false') }}"
+  no_log: true
+
+- name: Restore etcd from R2 snapshot (disaster recovery, one-time)
+  ansible.builtin.command:
+    cmd: /usr/local/bin/k3s server --cluster-reset --config /etc/rancher/k3s/config.yaml
+  when:
+    - k3s_restore_mode | bool
+    - k3s_installed_version.rc != 0
+  no_log: true
+  # Ye R2 se latest snapshot download karke etcd restore karta hai, phir exit.
+  # Uske baad neeche normal service start hogi.
 
 - name: Ensure k3s service is enabled and started
   ansible.builtin.systemd:
