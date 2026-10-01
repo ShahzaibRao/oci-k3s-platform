@@ -15,5 +15,6 @@ variable "nodes" {
     memory_in_gbs           = number
     boot_volume_size_in_gbs = number
     role                    = string
+    private_ip              = string
   }))
 }
