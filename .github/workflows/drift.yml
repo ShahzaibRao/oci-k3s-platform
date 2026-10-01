@@ -75,6 +75,9 @@ jobs:
           skip_requesting_account_id  = true
           EOF
           terraform init -input=false -backend-config=backend.r2.hcl
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_VAR_R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_VAR_R2_SECRET_ACCESS_KEY }}
 
       - name: Plan (detailed exit code)
         id: plan
