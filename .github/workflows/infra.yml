@@ -109,6 +109,10 @@ jobs:
           TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
           TF_VAR_r2_access_key_id: ${{ secrets.TF_VAR_R2_ACCESS_KEY_ID }}
           TF_VAR_r2_secret_access_key: ${{ secrets.TF_VAR_R2_SECRET_ACCESS_KEY }}
+          TF_VAR_creatorwatch_database_url: ${{ secrets.TF_VAR_CREATORWATCH_DATABASE_URL }}
+          TF_VAR_creatorwatch_admin_token: ${{ secrets.TF_VAR_CREATORWATCH_ADMIN_TOKEN }}
+          TF_VAR_creatorwatch_session_secret: ${{ secrets.TF_VAR_CREATORWATCH_SESSION_SECRET }}
+          TF_VAR_creatorwatch_key_secret: ${{ secrets.TF_VAR_CREATORWATCH_KEY_SECRET }}
 
       - name: Show plan summary
         run: terraform show -no-color tfplan >> "$GITHUB_STEP_SUMMARY"
@@ -200,6 +204,10 @@ jobs:
           TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
           TF_VAR_r2_access_key_id: ${{ secrets.TF_VAR_R2_ACCESS_KEY_ID }}
           TF_VAR_r2_secret_access_key: ${{ secrets.TF_VAR_R2_SECRET_ACCESS_KEY }}
+          TF_VAR_creatorwatch_database_url: ${{ secrets.TF_VAR_CREATORWATCH_DATABASE_URL }}
+          TF_VAR_creatorwatch_admin_token: ${{ secrets.TF_VAR_CREATORWATCH_ADMIN_TOKEN }}
+          TF_VAR_creatorwatch_session_secret: ${{ secrets.TF_VAR_CREATORWATCH_SESSION_SECRET }}
+          TF_VAR_creatorwatch_key_secret: ${{ secrets.TF_VAR_CREATORWATCH_KEY_SECRET }}
 
       - name: Generate Ansible inventory
         run: |
@@ -227,6 +235,10 @@ jobs:
           TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
           TF_VAR_r2_access_key_id: ${{ secrets.TF_VAR_R2_ACCESS_KEY_ID }}
           TF_VAR_r2_secret_access_key: ${{ secrets.TF_VAR_R2_SECRET_ACCESS_KEY }}
+          TF_VAR_creatorwatch_database_url: ${{ secrets.TF_VAR_CREATORWATCH_DATABASE_URL }}
+          TF_VAR_creatorwatch_admin_token: ${{ secrets.TF_VAR_CREATORWATCH_ADMIN_TOKEN }}
+          TF_VAR_creatorwatch_session_secret: ${{ secrets.TF_VAR_CREATORWATCH_SESSION_SECRET }}
+          TF_VAR_creatorwatch_key_secret: ${{ secrets.TF_VAR_CREATORWATCH_KEY_SECRET }}
 
       - name: Generate ESO ClusterSecretStore from vault_id
         run: |
@@ -275,6 +287,10 @@ jobs:
           TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
           TF_VAR_r2_access_key_id: ${{ secrets.TF_VAR_R2_ACCESS_KEY_ID }}
           TF_VAR_r2_secret_access_key: ${{ secrets.TF_VAR_R2_SECRET_ACCESS_KEY }}
+          TF_VAR_creatorwatch_database_url: ${{ secrets.TF_VAR_CREATORWATCH_DATABASE_URL }}
+          TF_VAR_creatorwatch_admin_token: ${{ secrets.TF_VAR_CREATORWATCH_ADMIN_TOKEN }}
+          TF_VAR_creatorwatch_session_secret: ${{ secrets.TF_VAR_CREATORWATCH_SESSION_SECRET }}
+          TF_VAR_creatorwatch_key_secret: ${{ secrets.TF_VAR_CREATORWATCH_KEY_SECRET }}
 
       - name: Commit inventory to main
         run: |

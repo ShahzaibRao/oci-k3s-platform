@@ -68,6 +68,30 @@ variable "r2_access_key_id" {
   sensitive   = true
 }
 
+variable "creatorwatch_database_url" {
+  type        = string
+  description = "Supabase Postgres URL for CreatorWatch license server. Never commit — TF_VAR_ in CI."
+  sensitive   = true
+}
+
+variable "creatorwatch_admin_token" {
+  type        = string
+  description = "CreatorWatch /admin login token. Never commit — TF_VAR_ in CI."
+  sensitive   = true
+}
+
+variable "creatorwatch_session_secret" {
+  type        = string
+  description = "CreatorWatch Flask session secret (stable). Never commit — TF_VAR_ in CI."
+  sensitive   = true
+}
+
+variable "creatorwatch_key_secret" {
+  type        = string
+  description = "CreatorWatch license key encryption secret — NEVER change after set. TF_VAR_ in CI."
+  sensitive   = true
+}
+
 variable "r2_secret_access_key" {
   type        = string
   description = "Cloudflare R2 S3 API secret key (Velero backups). Never commit — TF_VAR_ in CI."

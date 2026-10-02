@@ -39,5 +39,10 @@ module "vault" {
       "aws_secret_access_key=${var.r2_secret_access_key}",
     ])
     "cloudflare-api-token" = var.cloudflare_api_token
+    # CreatorWatch license server secrets (Supabase DB + auth)
+    "creatorwatch-database-url"   = var.creatorwatch_database_url
+    "creatorwatch-admin-token"    = var.creatorwatch_admin_token
+    "creatorwatch-session-secret" = var.creatorwatch_session_secret
+    "creatorwatch-key-secret"     = var.creatorwatch_key_secret
   }
 }
