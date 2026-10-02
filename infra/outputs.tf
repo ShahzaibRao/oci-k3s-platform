@@ -20,3 +20,8 @@ output "vault_id" {
   description = "OCID of the secrets vault (for External Secrets Operator ClusterSecretStore)"
   value       = module.vault.vault_id
 }
+
+output "lb_public_ip" {
+  description = "Public IP of the k3s load balancer — point Cloudflare A records here"
+  value       = module.lb.public_ip
+}
