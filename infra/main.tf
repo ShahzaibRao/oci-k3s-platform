@@ -17,6 +17,14 @@ module "compute" {
   nodes                = var.nodes
 }
 
+module "lb" {
+  source         = "./modules/lb"
+  compartment_id = var.compartment_id
+  subnet_id      = module.network.subnet_id
+  # Static private IPs from var.nodes (server 10.0.1.10, agent 10.0.1.11)
+  node_private_ips = [for n in var.nodes : n.private_ip]
+}
+
 module "vault" {
   source         = "./modules/vault"
   compartment_id = var.compartment_id
