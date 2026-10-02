@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cw-raoshahzaib-site
+  namespace: creatorwatch
+spec:
+  secretName: cw-raoshahzaib-site-tls
+  issuerRef:
+    name: letsencrypt-cloudflare
+    kind: ClusterIssuer
+  dnsNames:
+    - "cw.raoshahzaib.site"

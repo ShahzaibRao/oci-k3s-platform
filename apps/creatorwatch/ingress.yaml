@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: creatorwatch-license
+  namespace: creatorwatch
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - cw.raoshahzaib.site
+      secretName: cw-raoshahzaib-site-tls
+  rules:
+    - host: cw.raoshahzaib.site
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: creatorwatch-license
+                port:
+                  number: 80
