@@ -18,11 +18,11 @@ resource "oci_load_balancer_backend_set" "http" {
   policy           = "ROUND_ROBIN"
 
   health_checker {
-    protocol            = "TCP"
-    port                = 80
-    interval_ms         = 30000
-    timeout_in_millis   = 3000
-    retries             = 3
+    protocol          = "TCP"
+    port              = 80
+    interval_ms       = 30000
+    timeout_in_millis = 3000
+    retries           = 3
   }
 }
 
@@ -32,11 +32,11 @@ resource "oci_load_balancer_backend_set" "https" {
   policy           = "ROUND_ROBIN"
 
   health_checker {
-    protocol            = "TCP"
-    port                = 443
-    interval_ms         = 30000
-    timeout_in_millis   = 3000
-    retries             = 3
+    protocol          = "TCP"
+    port              = 443
+    interval_ms       = 30000
+    timeout_in_millis = 3000
+    retries           = 3
   }
 }
 
