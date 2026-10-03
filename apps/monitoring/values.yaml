@@ -53,6 +53,13 @@ grafana:
       auth_url: https://auth.raoshahzaib.site/realms/master/protocol/openid-connect/auth
       token_url: https://auth.raoshahzaib.site/realms/master/protocol/openid-connect/token
       api_url: https://auth.raoshahzaib.site/realms/master/protocol/openid-connect/userinfo
+    auth.google:
+      enabled: true
+      allow_sign_up: true
+      scopes: https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email
+      auth_url: https://accounts.google.com/o/oauth2/auth
+      token_url: https://accounts.google.com/o/oauth2/token
+      api_url: https://www.googleapis.com/oauth2/v1/userinfo
   # Client secret Vault se (env var override)
   # NOTE: Grafana chart envValueFrom use karta hai (extraEnvVars nahi!)
   envValueFrom:
@@ -60,6 +67,14 @@ grafana:
       secretKeyRef:
         name: grafana-oidc-secret
         key: client-secret
+    GF_AUTH_GOOGLE_CLIENT_ID:
+      secretKeyRef:
+        name: grafana-oidc-secret
+        key: google-client-id
+    GF_AUTH_GOOGLE_CLIENT_SECRET:
+      secretKeyRef:
+        name: grafana-oidc-secret
+        key: google-client-secret
 
 # --- Alertmanager (halka hai, chalne do) ---
 alertmanager:
