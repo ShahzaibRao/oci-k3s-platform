@@ -98,6 +98,18 @@ variable "grafana_oidc_secret" {
   sensitive   = true
 }
 
+variable "grafana_google_client_id" {
+  type        = string
+  description = "Google OAuth client ID for Grafana. Never commit — TF_VAR_ in CI."
+  sensitive   = true
+}
+
+variable "grafana_google_client_secret" {
+  type        = string
+  description = "Google OAuth client secret for Grafana. Never commit — TF_VAR_ in CI."
+  sensitive   = true
+}
+
 variable "argocd_oidc_secret" {
   type        = string
   description = "Keycloak client secret for ArgoCD OIDC. Never commit — TF_VAR_ in CI."
