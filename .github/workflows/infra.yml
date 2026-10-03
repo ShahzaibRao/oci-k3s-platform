@@ -117,6 +117,8 @@ jobs:
           TF_VAR_keycloak_admin_password: ${{ secrets.TF_VAR_KEYCLOAK_ADMIN_PASSWORD }}
           TF_VAR_grafana_oidc_secret: ${{ secrets.TF_VAR_GRAFANA_OIDC_SECRET }}
           TF_VAR_argocd_oidc_secret: ${{ secrets.TF_VAR_ARGOCD_OIDC_SECRET }}
+          TF_VAR_grafana_google_client_id: ${{ secrets.TF_VAR_GRAFANA_GOOGLE_CLIENT_ID }}
+          TF_VAR_grafana_google_client_secret: ${{ secrets.TF_VAR_GRAFANA_GOOGLE_CLIENT_SECRET }}
 
       - name: Show plan summary
         run: terraform show -no-color tfplan >> "$GITHUB_STEP_SUMMARY"
@@ -216,6 +218,8 @@ jobs:
           TF_VAR_keycloak_admin_password: ${{ secrets.TF_VAR_KEYCLOAK_ADMIN_PASSWORD }}
           TF_VAR_grafana_oidc_secret: ${{ secrets.TF_VAR_GRAFANA_OIDC_SECRET }}
           TF_VAR_argocd_oidc_secret: ${{ secrets.TF_VAR_ARGOCD_OIDC_SECRET }}
+          TF_VAR_grafana_google_client_id: ${{ secrets.TF_VAR_GRAFANA_GOOGLE_CLIENT_ID }}
+          TF_VAR_grafana_google_client_secret: ${{ secrets.TF_VAR_GRAFANA_GOOGLE_CLIENT_SECRET }}
 
       - name: Generate Ansible inventory
         run: |
@@ -251,6 +255,8 @@ jobs:
           TF_VAR_keycloak_admin_password: ${{ secrets.TF_VAR_KEYCLOAK_ADMIN_PASSWORD }}
           TF_VAR_grafana_oidc_secret: ${{ secrets.TF_VAR_GRAFANA_OIDC_SECRET }}
           TF_VAR_argocd_oidc_secret: ${{ secrets.TF_VAR_ARGOCD_OIDC_SECRET }}
+          TF_VAR_grafana_google_client_id: ${{ secrets.TF_VAR_GRAFANA_GOOGLE_CLIENT_ID }}
+          TF_VAR_grafana_google_client_secret: ${{ secrets.TF_VAR_GRAFANA_GOOGLE_CLIENT_SECRET }}
 
       - name: Generate ESO ClusterSecretStore from vault_id
         run: |
@@ -307,6 +313,8 @@ jobs:
           TF_VAR_keycloak_admin_password: ${{ secrets.TF_VAR_KEYCLOAK_ADMIN_PASSWORD }}
           TF_VAR_grafana_oidc_secret: ${{ secrets.TF_VAR_GRAFANA_OIDC_SECRET }}
           TF_VAR_argocd_oidc_secret: ${{ secrets.TF_VAR_ARGOCD_OIDC_SECRET }}
+          TF_VAR_grafana_google_client_id: ${{ secrets.TF_VAR_GRAFANA_GOOGLE_CLIENT_ID }}
+          TF_VAR_grafana_google_client_secret: ${{ secrets.TF_VAR_GRAFANA_GOOGLE_CLIENT_SECRET }}
 
       - name: Commit inventory to main
         run: |
