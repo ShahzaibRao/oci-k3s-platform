@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: keycloak
+  namespace: keycloak
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - auth.raoshahzaib.site
+      secretName: auth-raoshahzaib-site-tls
+  rules:
+    - host: auth.raoshahzaib.site
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: keycloak
+                port:
+                  number: 80
