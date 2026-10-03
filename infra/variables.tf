@@ -92,6 +92,18 @@ variable "keycloak_database_url" {
   sensitive   = true
 }
 
+variable "grafana_oidc_secret" {
+  type        = string
+  description = "Keycloak client secret for Grafana OIDC. Never commit — TF_VAR_ in CI."
+  sensitive   = true
+}
+
+variable "argocd_oidc_secret" {
+  type        = string
+  description = "Keycloak client secret for ArgoCD OIDC. Never commit — TF_VAR_ in CI."
+  sensitive   = true
+}
+
 variable "keycloak_admin_password" {
   type        = string
   description = "Keycloak admin console password. Never commit — TF_VAR_ in CI."

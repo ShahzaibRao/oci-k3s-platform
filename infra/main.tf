@@ -47,5 +47,8 @@ module "vault" {
     # Keycloak SSO secrets (Supabase Postgres + admin console)
     "keycloak-database-url"   = var.keycloak_database_url
     "keycloak-admin-password" = var.keycloak_admin_password
+    # OIDC client secrets (Keycloak SSO for Grafana + ArgoCD)
+    "grafana-oidc-secret" = var.grafana_oidc_secret
+    "argocd-oidc-secret"  = var.argocd_oidc_secret
   }
 }
