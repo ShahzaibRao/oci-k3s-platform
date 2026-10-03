@@ -42,6 +42,8 @@ grafana:
   adminPassword: "admin123-change-me"
   # Keycloak SSO (OIDC)
   grafana.ini:
+    server:
+      root_url: https://grafana.raoshahzaib.site/
     auth.generic_oauth:
       enabled: true
       name: Keycloak
