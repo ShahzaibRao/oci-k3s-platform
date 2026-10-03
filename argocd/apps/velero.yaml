@@ -47,6 +47,7 @@ spec:
               - argocd
               - cert-manager
               - external-secrets
+              - creatorwatch
               ttl: 720h
         upgradeCRDs: false
   destination:
