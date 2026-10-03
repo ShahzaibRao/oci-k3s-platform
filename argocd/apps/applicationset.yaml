@@ -39,6 +39,8 @@ spec:
             syncWave: "1"
           - name: creatorwatch
             syncWave: "2"
+          - name: keycloak
+            syncWave: "2"
         # velero and monitoring use static Applications (argocd/apps/*.yaml)
         # with the Helm chart directly — the wrapper-chart pattern caused
         # values to not reach the subchart.
