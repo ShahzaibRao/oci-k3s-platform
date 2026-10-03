@@ -86,6 +86,18 @@ variable "creatorwatch_session_secret" {
   sensitive   = true
 }
 
+variable "keycloak_database_url" {
+  type        = string
+  description = "Supabase JDBC URL for Keycloak (with user+password). Never commit — TF_VAR_ in CI."
+  sensitive   = true
+}
+
+variable "keycloak_admin_password" {
+  type        = string
+  description = "Keycloak admin console password. Never commit — TF_VAR_ in CI."
+  sensitive   = true
+}
+
 variable "creatorwatch_key_secret" {
   type        = string
   description = "CreatorWatch license key encryption secret — NEVER change after set. TF_VAR_ in CI."
