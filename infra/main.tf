@@ -44,5 +44,8 @@ module "vault" {
     "creatorwatch-admin-token"    = var.creatorwatch_admin_token
     "creatorwatch-session-secret" = var.creatorwatch_session_secret
     "creatorwatch-key-secret"     = var.creatorwatch_key_secret
+    # Keycloak SSO secrets (Supabase Postgres + admin console)
+    "keycloak-database-url"   = var.keycloak_database_url
+    "keycloak-admin-password" = var.keycloak_admin_password
   }
 }
