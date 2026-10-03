@@ -50,5 +50,8 @@ module "vault" {
     # OIDC client secrets (Keycloak SSO for Grafana + ArgoCD)
     "grafana-oidc-secret" = var.grafana_oidc_secret
     "argocd-oidc-secret"  = var.argocd_oidc_secret
+    # Grafana Google OAuth (alongside Keycloak)
+    "grafana-google-client-id"     = var.grafana_google_client_id
+    "grafana-google-client-secret" = var.grafana_google_client_secret
   }
 }
