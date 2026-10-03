@@ -40,6 +40,24 @@ grafana:
   # Admin password: pehle login par change karna!
   # Default user: admin
   adminPassword: "admin123-change-me"
+  # Keycloak SSO (OIDC)
+  grafana.ini:
+    auth.generic_oauth:
+      enabled: true
+      name: Keycloak
+      allow_sign_up: true
+      client_id: grafana
+      scopes: openid email profile
+      auth_url: https://auth.raoshahzaib.site/realms/master/protocol/openid-connect/auth
+      token_url: https://auth.raoshahzaib.site/realms/master/protocol/openid-connect/token
+      api_url: https://auth.raoshahzaib.site/realms/master/protocol/openid-connect/userinfo
+  # Client secret Vault se (env var override)
+  extraEnvVars:
+    - name: GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: grafana-oidc-secret
+          key: client-secret
 
 # --- Alertmanager (halka hai, chalne do) ---
 alertmanager:
