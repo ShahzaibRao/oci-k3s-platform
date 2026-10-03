@@ -54,13 +54,12 @@ grafana:
       token_url: https://auth.raoshahzaib.site/realms/master/protocol/openid-connect/token
       api_url: https://auth.raoshahzaib.site/realms/master/protocol/openid-connect/userinfo
   # Client secret Vault se (env var override)
-  # NOTE: Grafana chart MAP format chahta hai (list nahi)
-  extraEnvVars:
+  # NOTE: Grafana chart envValueFrom use karta hai (extraEnvVars nahi!)
+  envValueFrom:
     GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET:
-      valueFrom:
-        secretKeyRef:
-          name: grafana-oidc-secret
-          key: client-secret
+      secretKeyRef:
+        name: grafana-oidc-secret
+        key: client-secret
 
 # --- Alertmanager (halka hai, chalne do) ---
 alertmanager:
