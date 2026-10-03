@@ -24,6 +24,13 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
+  # CRD annotations ko ignore karo — ArgoCD ki tracking annotations 262KB
+  # limit cross kar jati hain (known prometheus-operator + ArgoCD issue)
+  ignoreDifferences:
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      jsonPointers:
+        - /metadata/annotations
   syncPolicy:
     automated:
       prune: true
