@@ -37,10 +37,12 @@ grafana:
       - secretName: grafana-raoshahzaib-site-tls
         hosts:
           - grafana.raoshahzaib.site
-  # Admin password: pehle login par change karna!
-  # Default user: admin
-  # TODO: move to Vault once ESO OCI fetch is debugged
-  adminPassword: "admin123-change-me"
+  # Admin credentials from OCI Vault via ExternalSecret (grafana-admin-secret).
+  # Default user: admin | Password: Vault secret grafana-admin-password
+  admin:
+    existingSecret: grafana-admin-secret
+    userKey: admin-user
+    passwordKey: admin-password
   # Keycloak SSO (OIDC)
   grafana.ini:
     server:
