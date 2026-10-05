@@ -1,0 +1,15 @@
+title = "OCI k3s Platform Gitleaks Config"
+
+# Allowlisted test/example secrets (not real)
+[allowlist]
+  description = "Allowlisted placeholders and test values"
+  paths = [
+    """\.github/workflows/gitleaks\.yml""",
+  ]
+  regexes = [
+    """admin123-change-me""",  # TODO: move to Vault (tracked)
+    """EXAMPLE""",
+    """PLACEHOLDER""",
+    """YOUR-""",
+    """APNA-""",
+  ]
