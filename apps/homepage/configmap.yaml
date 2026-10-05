@@ -37,6 +37,9 @@ data:
             - abbr: BL
               href: https://blog.raoshahzaib.site
   widgets.yaml: |
+    - kubernetes:
+        cluster: oci-k3s
+        namespace: default
     - resources:
         cpu: true
         memory: true
