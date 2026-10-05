@@ -2,11 +2,32 @@
 
 | Field | Value |
 |---|---|
-| Version | 1.0 (DRAFT) |
-| Date | 2026-09-28 |
-| Status | Pre-implementation — nothing applied |
+| Version | 2.0 (LIVE) |
+| Date | 2026-10-05 |
+| Status | ✅ Production — live since 2026-10-02, serving real traffic |
 | Author | Rao Shahzaib |
 | Companion | `ARCHITECTURE.md` (decision log) |
+
+---
+
+## 0. Implementation Status (2026-10-05)
+
+This design was implemented with the following **deviations** (documented in ARCHITECTURE.md):
+
+| Planned | Actual | Reason |
+|---------|--------|--------|
+| Cilium eBPF CNI | k3s default (flannel + kube-proxy) | Pod-to-API `No route to host` saga 2026-10-01 |
+| Longhorn storage | Removed (no PV storage) | Out of scope 2026-09-30; apps use external DB |
+| Gateway API | Standard Ingress | Simpler; Traefik Ingress works fine |
+| Page-Manager-Pro | Not deployed | Out of scope; CreatorWatch only |
+| LB deferred | **LB live** since 2026-10-02 | App go-live happened |
+| Falco | Not yet deployed | Deferred |
+| Hubble | Not available | No Cilium |
+
+**New additions not in original design:**
+- Keycloak 26.0.8 SSO (Grafana Keycloak+Google OAuth)
+- Homepage cluster dashboard (gethomepage.dev)
+- Static private IPs (10.0.1.10, 10.0.1.11)
 
 ---
 
