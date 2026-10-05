@@ -37,11 +37,10 @@ grafana:
       - secretName: grafana-raoshahzaib-site-tls
         hosts:
           - grafana.raoshahzaib.site
-  # Admin credentials via Vault (ESO) — native chart existingSecret
-  admin:
-    existingSecret: "grafana-oidc-secret"
-    userKey: admin-user
-    passwordKey: admin-password
+  # Admin password: pehle login par change karna!
+  # Default user: admin
+  # TODO: move to Vault once ESO OCI fetch is debugged
+  adminPassword: "admin123-change-me"
   # Keycloak SSO (OIDC)
   grafana.ini:
     server:
