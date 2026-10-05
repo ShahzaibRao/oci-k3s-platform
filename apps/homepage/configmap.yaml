@@ -16,7 +16,7 @@ data:
             href: https://grafana.raoshahzaib.site
             description: Metrics & Dashboards
         - ArgoCD:
-            icon: argocd.png
+            icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/argo-cd.png
             href: https://argocd.raoshahzaib.site
             description: GitOps Deployments
         - Keycloak:
@@ -25,7 +25,7 @@ data:
             description: SSO Identity
     - Applications:
         - CreatorWatch:
-            icon: https://cw.raoshahzaib.site/favicon.ico
+            icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/youtube.png
             href: https://cw.raoshahzaib.site
             description: License Server ($29/yr SaaS)
   bookmarks.yaml: |
