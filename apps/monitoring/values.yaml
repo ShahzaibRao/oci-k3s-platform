@@ -37,9 +37,7 @@ grafana:
       - secretName: grafana-raoshahzaib-site-tls
         hosts:
           - grafana.raoshahzaib.site
-  # Admin password: pehle login par change karna!
-  # Default user: admin
-  adminPassword: "admin123-change-me"
+  # Admin credentials via Vault (ESO) — GF_SECURITY_ADMIN_* env vars
   # Keycloak SSO (OIDC)
   grafana.ini:
     server:
@@ -75,6 +73,14 @@ grafana:
       secretKeyRef:
         name: grafana-oidc-secret
         key: google-client-secret
+    GF_SECURITY_ADMIN_USER:
+      secretKeyRef:
+        name: grafana-oidc-secret
+        key: admin-user
+    GF_SECURITY_ADMIN_PASSWORD:
+      secretKeyRef:
+        name: grafana-oidc-secret
+        key: admin-password
 
 # --- Alertmanager (halka hai, chalne do) ---
 alertmanager:
