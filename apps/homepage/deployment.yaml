@@ -19,6 +19,9 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
+          env:
+            - name: HOMEPAGE_ALLOWED_HOSTS
+              value: "homepage.raoshahzaib.site"
           volumeMounts:
             - name: config
               mountPath: /app/config
