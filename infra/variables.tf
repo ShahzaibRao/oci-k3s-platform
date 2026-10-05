@@ -98,6 +98,12 @@ variable "grafana_oidc_secret" {
   sensitive   = true
 }
 
+variable "grafana_admin_password" {
+  type        = string
+  description = "Grafana admin password. Never commit — TF_VAR_ in CI."
+  sensitive   = true
+}
+
 variable "grafana_google_client_id" {
   type        = string
   description = "Google OAuth client ID for Grafana. Never commit — TF_VAR_ in CI."
