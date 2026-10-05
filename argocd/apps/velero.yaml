@@ -48,6 +48,7 @@ spec:
               - cert-manager
               - external-secrets
               - creatorwatch
+              - monitoring
               ttl: 720h
         upgradeCRDs: false
   destination:
