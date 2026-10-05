@@ -24,12 +24,18 @@ spec:
               value: "homepage.raoshahzaib.site"
           volumeMounts:
             - name: config
-              mountPath: /app/config
-            - name: logs
-              mountPath: /app/config/logs
+              mountPath: /app/config/settings.yaml
+              subPath: settings.yaml
+            - name: config
+              mountPath: /app/config/services.yaml
+              subPath: services.yaml
+            - name: config
+              mountPath: /app/config/bookmarks.yaml
+              subPath: bookmarks.yaml
+            - name: config
+              mountPath: /app/config/widgets.yaml
+              subPath: widgets.yaml
       volumes:
         - name: config
           configMap:
             name: homepage-config
-        - name: logs
-          emptyDir: {}
