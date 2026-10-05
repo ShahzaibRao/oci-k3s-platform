@@ -46,9 +46,12 @@ spec:
               includedNamespaces:
               - argocd
               - cert-manager
+              - cert-manager-crds
               - external-secrets
               - creatorwatch
               - monitoring
+              - keycloak
+              - homepage
               ttl: 720h
         upgradeCRDs: false
   destination:
