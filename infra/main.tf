@@ -54,5 +54,6 @@ module "vault" {
     "grafana-google-client-id"     = var.grafana_google_client_id
     "grafana-google-client-secret" = var.grafana_google_client_secret
     "grafana-admin-password"       = var.grafana_admin_password
+    "grafana-admin-user"           = var.grafana_admin_user
   }
 }
