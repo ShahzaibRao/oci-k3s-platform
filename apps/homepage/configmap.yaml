@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homepage-config
+  namespace: homepage
+data:
+  settings.yaml: |
+    title: Rao's k3s Cluster
+    theme: dark
+    color: slate
+    headerStyle: clean
+  services.yaml: |
+    - Infrastructure:
+        - Grafana:
+            icon: grafana.png
+            href: https://grafana.raoshahzaib.site
+            description: Metrics & Dashboards
+        - ArgoCD:
+            icon: argocd.png
+            href: https://argocd.raoshahzaib.site
+            description: GitOps Deployments
+        - Keycloak:
+            icon: keycloak.png
+            href: https://auth.raoshahzaib.site
+            description: SSO Identity
+    - Applications:
+        - CreatorWatch:
+            icon: https://cw.raoshahzaib.site/favicon.ico
+            href: https://cw.raoshahzaib.site
+            description: License Server ($29/yr SaaS)
+  bookmarks.yaml: |
+    - DevOps:
+        - GitHub:
+            - abbr: GH
+              href: https://github.com/ShahzaibRao
+        - Blog:
+            - abbr: BL
+              href: https://blog.raoshahzaib.site
+  widgets.yaml: |
+    - resources:
+        cpu: true
+        memory: true
+        disk: /
