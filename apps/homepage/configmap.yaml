@@ -11,6 +11,14 @@ data:
     headerStyle: clean
   services.yaml: |
     - Infrastructure:
+        - Kubernetes:
+            icon: kubernetes.png
+            href: https://argocd.raoshahzaib.site
+            description: 2 Nodes Live Cluster
+            widget:
+              type: kubernetes
+              cluster: oci-k3s
+              namespace: default
         - Grafana:
             icon: grafana.png
             href: https://grafana.raoshahzaib.site
@@ -37,9 +45,6 @@ data:
             - abbr: BL
               href: https://blog.raoshahzaib.site
   widgets.yaml: |
-    - kubernetes:
-        cluster: oci-k3s
-        namespace: default
     - resources:
         cpu: true
         memory: true
