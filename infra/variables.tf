@@ -104,6 +104,12 @@ variable "grafana_admin_password" {
   sensitive   = true
 }
 
+variable "grafana_admin_user" {
+  type        = string
+  description = "Grafana admin username."
+  default     = "admin"
+}
+
 variable "grafana_google_client_id" {
   type        = string
   description = "Google OAuth client ID for Grafana. Never commit — TF_VAR_ in CI."
