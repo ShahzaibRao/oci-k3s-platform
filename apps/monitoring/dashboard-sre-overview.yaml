@@ -1,0 +1,194 @@
+# apps/monitoring/dashboard-sre-overview.yaml
+# SRE - Kubernetes Cluster Overview dashboard, provisioned declaratively.
+# The kube-prometheus-stack Grafana sidecar picks up ConfigMaps labelled
+# grafana_dashboard: "1" and loads them automatically.
+# WHY: dashboards created in the Grafana UI live in ephemeral storage
+# (emptyDir, no PVC) - the 2026-10-06 DR test proved they do NOT survive
+# a cluster rebuild. Git is the source of truth.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-sre-overview
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  sre-kubernetes-cluster-overview.json: |
+    {
+      "id": null,
+      "panels": [
+        {
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 70
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              },
+              "unit": "percent"
+            }
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 6,
+            "x": 0,
+            "y": 0
+          },
+          "id": 1,
+          "targets": [
+            {
+              "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+              "refId": "A"
+            }
+          ],
+          "title": "Cluster CPU Usage",
+          "type": "stat"
+        },
+        {
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 70
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              },
+              "unit": "percent"
+            }
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 6,
+            "x": 6,
+            "y": 0
+          },
+          "id": 2,
+          "targets": [
+            {
+              "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
+              "refId": "A"
+            }
+          ],
+          "title": "Cluster Memory Usage",
+          "type": "stat"
+        },
+        {
+          "gridPos": {
+            "h": 8,
+            "w": 6,
+            "x": 12,
+            "y": 0
+          },
+          "id": 3,
+          "targets": [
+            {
+              "expr": "count(kube_pod_status_phase{phase=\"Running\"})",
+              "refId": "A"
+            }
+          ],
+          "title": "Running Pods",
+          "type": "stat"
+        },
+        {
+          "gridPos": {
+            "h": 8,
+            "w": 6,
+            "x": 18,
+            "y": 0
+          },
+          "id": 4,
+          "targets": [
+            {
+              "expr": "count(kube_node_status_condition{condition=\"Ready\",status=\"true\"})",
+              "refId": "A"
+            }
+          ],
+          "title": "Nodes Ready",
+          "type": "stat"
+        },
+        {
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 8
+          },
+          "id": 5,
+          "targets": [
+            {
+              "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+              "legendFormat": "{{instance}}",
+              "refId": "A"
+            }
+          ],
+          "title": "CPU Usage by Node",
+          "type": "timeseries"
+        },
+        {
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 8
+          },
+          "id": 6,
+          "targets": [
+            {
+              "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
+              "legendFormat": "{{instance}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Memory Usage by Node",
+          "type": "timeseries"
+        },
+        {
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 16
+          },
+          "id": 7,
+          "targets": [
+            {
+              "expr": "count by (namespace, phase) (kube_pod_status_phase)",
+              "format": "table",
+              "refId": "A"
+            }
+          ],
+          "title": "Pod Status Overview",
+          "type": "table"
+        }
+      ],
+      "schemaVersion": 27,
+      "tags": [
+        "sre",
+        "kubernetes"
+      ],
+      "timezone": "browser",
+      "title": "SRE - Kubernetes Cluster Overview",
+      "version": 0,
+      "uid": "d8b4067f-bb43-4022-bf3b-bb44268f6ab5"
+    }
