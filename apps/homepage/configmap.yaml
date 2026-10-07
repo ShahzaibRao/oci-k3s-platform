@@ -37,10 +37,6 @@ data:
             - abbr: BL
               href: https://blog.raoshahzaib.site
   widgets.yaml: |
-    - resources:
-        cpu: true
-        memory: true
-        disk: /
     - kubernetes:
         cluster:
           show: true
